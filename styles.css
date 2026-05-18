@@ -1,0 +1,158 @@
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#030712;color:#f1f5f9;font-family:'Barlow','Inter',sans-serif;min-height:100vh;}
+input:focus{outline:none;}
+input[type=number]::-webkit-inner-spin-button{opacity:1;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:#0a0f1e;}
+::-webkit-scrollbar-thumb{background:#16a34a;border-radius:4px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spin{animation:spin 1s linear infinite;display:inline-block;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.pulse{animation:pulse 2s infinite;}
+button,input{font-family:'Barlow','Inter',sans-serif;}
+
+/* Sports typography */
+h1,h2,h3{font-family:'Barlow Condensed','Inter',sans-serif;text-transform:uppercase;letter-spacing:3px;}
+
+/* ── CSS Custom Properties ───────────────────────────────────────────────── */
+:root{--ease-out:cubic-bezier(0.23,1,0.32,1);--ease-in-out:cubic-bezier(0.77,0,0.175,1);}
+
+/* ── Layout containers ───────────────────────────────────────────────────── */
+.app-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;width:100%;}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;width:100%;}
+.main-wrap{max-width:1280px;margin:0 auto;padding:28px 20px;}
+@media(min-width:768px){.main-wrap{padding:28px 28px;}}
+
+/* ── Fixtures two-column (desktop sidebar) ───────────────────────────────── */
+.fixtures-cols{display:grid;grid-template-columns:1fr;gap:24px;align-items:start;}
+@media(min-width:1100px){.fixtures-cols{grid-template-columns:1fr 380px;}}
+.desktop-sidebar{display:none;}
+@media(min-width:1100px){.desktop-sidebar{display:block;position:sticky;top:112px;}}
+
+/* ── Groups grid – all 12 groups ─────────────────────────────────────────── */
+.groups-grid{display:grid;grid-template-columns:1fr;gap:20px;align-items:start;}
+@media(min-width:680px){.groups-grid{grid-template-columns:1fr 1fr;}}
+@media(min-width:1100px){.groups-grid{grid-template-columns:1fr 1fr 1fr;}}
+
+/* ── Knockout grid ────────────────────────────────────────────────────────── */
+.ko-grid{display:grid;grid-template-columns:1fr;gap:8px;}
+@media(min-width:900px){.ko-grid{grid-template-columns:1fr 1fr;gap:16px;}}
+.ko-grid .match-card{margin-bottom:14px;}
+
+/* ── Group filter pill row ───────────────────────────────────────────────── */
+.pills-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.pills-row::-webkit-scrollbar{display:none;}
+
+/* ── Leaderboard grid ─────────────────────────────────────────────────────── */
+.lb-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+@media(min-width:900px){.lb-grid{grid-template-columns:1fr 1fr;gap:18px;}}
+.lb-grid>*{margin-bottom:0!important;}
+
+/* ── Button press feedback ────────────────────────────────────────────────── */
+button:active{transform:scale(0.97);}
+
+/* ── MUI Ripple ───────────────────────────────────────────────────────────── */
+@keyframes rippleAnim{from{transform:scale(0);opacity:0.45;}to{transform:scale(1);opacity:0;}}
+
+/* ── MUI Elevation (dark-surface) ────────────────────────────────────────── */
+.elev-1{box-shadow:0 2px 4px rgba(0,0,0,0.45),0 1px 2px rgba(0,0,0,0.3);}
+.elev-2{box-shadow:0 3px 8px rgba(0,0,0,0.5),0 1px 4px rgba(0,0,0,0.35);}
+.elev-4{box-shadow:0 4px 14px rgba(0,0,0,0.55),0 2px 6px rgba(0,0,0,0.4);}
+.elev-8{box-shadow:0 8px 24px rgba(0,0,0,0.6),0 3px 10px rgba(0,0,0,0.45);}
+
+/* ── Sport gradient buttons ──────────────────────────────────────────────── */
+.btn-sport{font-family:'Barlow Condensed','Inter',sans-serif;font-weight:800;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;border-radius:6px;position:relative;overflow:hidden;transition:box-shadow 200ms ease,filter 150ms ease;}
+.btn-sport:hover{filter:brightness(1.1);}
+.btn-green{background:linear-gradient(135deg,#18b352 0%,#14803d 100%);color:#fff;box-shadow:0 4px 14px rgba(22,163,74,0.4),0 2px 6px rgba(0,0,0,0.3);}
+.btn-green:hover{box-shadow:0 6px 20px rgba(22,163,74,0.55),0 3px 10px rgba(0,0,0,0.35);}
+.btn-amber{background:linear-gradient(135deg,#f59e0b 0%,#b45309 100%);color:#fff;box-shadow:0 4px 14px rgba(217,119,6,0.4),0 2px 6px rgba(0,0,0,0.3);}
+.btn-amber:hover{box-shadow:0 6px 20px rgba(217,119,6,0.55),0 3px 10px rgba(0,0,0,0.35);}
+
+/* ── Sport outlined buttons ──────────────────────────────────────────────── */
+.btn-outlined-green:hover{background:rgba(22,163,74,0.12)!important;box-shadow:0 0 0 1px rgba(74,222,128,0.4)!important;}
+.btn-outlined-amber:hover{background:rgba(217,119,6,0.12)!important;box-shadow:0 0 0 1px rgba(251,191,36,0.4)!important;}
+
+/* ── Match card: sports left-accent border + hover ───────────────────────── */
+@keyframes cardEntry{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.match-card{
+  transition:transform 120ms var(--ease-out),box-shadow 120ms var(--ease-out);
+  animation:cardEntry 180ms var(--ease-out) both;
+  box-shadow:0 4px 14px rgba(0,0,0,0.5),0 1px 4px rgba(0,0,0,0.35);
+}
+@media(hover:hover) and (pointer:fine){
+  .match-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.65),0 3px 10px rgba(0,0,0,0.4);}
+}
+.match-card:nth-child(1){animation-delay:0ms;}
+.match-card:nth-child(2){animation-delay:30ms;}
+.match-card:nth-child(3){animation-delay:60ms;}
+.match-card:nth-child(4){animation-delay:90ms;}
+.match-card:nth-child(5){animation-delay:120ms;}
+.match-card:nth-child(6){animation-delay:150ms;}
+.match-card:nth-child(7){animation-delay:180ms;}
+.match-card:nth-child(8){animation-delay:210ms;}
+
+/* ── Modal animations ─────────────────────────────────────────────────────── */
+@keyframes overlayFadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes modalSlideIn{from{opacity:0;transform:scale(0.96) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-overlay{animation:overlayFadeIn 200ms ease-out both;}
+.modal-box{animation:modalSlideIn 280ms var(--ease-out) both;}
+
+/* ── Login card entry ─────────────────────────────────────────────────────── */
+@keyframes loginCardIn{from{opacity:0;transform:translateY(16px) scale(0.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.login-card{animation:loginCardIn 380ms var(--ease-out) both;}
+
+/* ── Toast / status message ───────────────────────────────────────────────── */
+@keyframes toastSlideDown{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.toast-msg{animation:toastSlideDown 180ms var(--ease-out) both;}
+
+/* ── Group cards stagger ──────────────────────────────────────────────────── */
+.groups-grid>*{animation:cardEntry 200ms var(--ease-out) both;}
+.groups-grid>*:nth-child(1){animation-delay:0ms;}
+.groups-grid>*:nth-child(2){animation-delay:30ms;}
+.groups-grid>*:nth-child(3){animation-delay:60ms;}
+.groups-grid>*:nth-child(4){animation-delay:90ms;}
+.groups-grid>*:nth-child(5){animation-delay:120ms;}
+.groups-grid>*:nth-child(6){animation-delay:150ms;}
+.groups-grid>*:nth-child(7){animation-delay:180ms;}
+.groups-grid>*:nth-child(8){animation-delay:210ms;}
+.groups-grid>*:nth-child(9){animation-delay:240ms;}
+.groups-grid>*:nth-child(10){animation-delay:270ms;}
+.groups-grid>*:nth-child(11){animation-delay:300ms;}
+.groups-grid>*:nth-child(12){animation-delay:330ms;}
+
+/* ── Leaderboard stagger ──────────────────────────────────────────────────── */
+.lb-grid>*{animation:cardEntry 200ms var(--ease-out) both;}
+.lb-grid>*:nth-child(1){animation-delay:0ms;}
+.lb-grid>*:nth-child(2){animation-delay:50ms;}
+.lb-grid>*:nth-child(3){animation-delay:100ms;}
+.lb-grid>*:nth-child(4){animation-delay:150ms;}
+.lb-grid>*:nth-child(5){animation-delay:200ms;}
+.lb-grid>*:nth-child(6){animation-delay:250ms;}
+.lb-grid>*:nth-child(7){animation-delay:300ms;}
+.lb-grid>*:nth-child(8){animation-delay:350ms;}
+
+/* ── Leaderboard podium glows ─────────────────────────────────────────────── */
+.lb-gold{box-shadow:0 4px 18px rgba(245,158,11,0.35),0 2px 6px rgba(0,0,0,0.45)!important;}
+.lb-silver{box-shadow:0 3px 12px rgba(148,163,184,0.25),0 1px 4px rgba(0,0,0,0.4)!important;}
+.lb-bronze{box-shadow:0 3px 12px rgba(184,115,51,0.25),0 1px 4px rgba(0,0,0,0.4)!important;}
+.lb-other{box-shadow:0 2px 6px rgba(0,0,0,0.4)!important;}
+
+/* ── MUI Dialog (modal) ───────────────────────────────────────────────────── */
+.modal-box{box-shadow:0 11px 32px rgba(0,0,0,0.7),0 5px 16px rgba(0,0,0,0.5);}
+
+/* ── Sport card elevation ─────────────────────────────────────────────────── */
+.sport-card-elev{box-shadow:0 4px 12px rgba(0,0,0,0.5),0 1px 4px rgba(0,0,0,0.35);}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;}
+}
+
+/* ── Focus states (keyboard navigation) ─────────────────────────────────── */
+button:focus-visible{outline:2px solid #4ade80;outline-offset:2px;border-radius:4px;}
+input:focus-visible{outline:2px solid #16a34a;outline-offset:1px;border-radius:6px;}
+
+/* ── Touch targets (mobile a11y) ─────────────────────────────────────────── */
+@media(max-width:767px){
+  button{min-height:44px;}
+}

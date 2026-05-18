@@ -1,0 +1,145 @@
+import { useAppStore } from '../store/useAppStore';
+import { GF } from '../data/constants';
+import { calcPts } from '../data/logic';
+
+const MEDALS: Record<number, string> = { 0: '🥇', 1: '🥈', 2: '🥉' };
+
+const RANK_STYLES: Record<number, { border: string; bg: string; shadow: string }> = {
+  0: { border: '#f59e0b', bg: '#1c1002', shadow: 'lb-gold' },
+  1: { border: '#94a3b8', bg: '#0f1623', shadow: 'lb-silver' },
+  2: { border: '#b87333', bg: '#130e08', shadow: 'lb-bronze' },
+};
+
+function getRankStyle(rank: number) {
+  return RANK_STYLES[rank] ?? { border: '#1e3a5f', bg: '#0a1628', shadow: 'lb-other' };
+}
+
+export function LeaderboardTab() {
+  const { users, preds, results, ko, setModal } = useAppStore();
+  const allFixtures = [...GF, ...ko];
+
+  const scores = Object.entries(users).map(([uid, name]) => {
+    const userPreds = preds[uid] ?? {};
+    const pts = allFixtures.reduce((sum, f) => {
+      const pred = userPreds[f.id];
+      const res = results[f.id];
+      if (!pred || !res || res.homeGoals === undefined) return sum;
+      return sum + calcPts(pred, res, f);
+    }, 0);
+    return { uid, name, pts };
+  });
+
+  scores.sort((a, b) => b.pts - a.pts);
+
+  return (
+    <div>
+      {/* Header row with rules button */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h2
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 18,
+            fontWeight: 900,
+            color: '#f1f5f9',
+            textTransform: 'uppercase',
+            letterSpacing: 3,
+          }}
+        >
+          Leaderboard
+        </h2>
+        <button
+          onClick={() => setModal({ type: 'rules' })}
+          style={{
+            background: 'transparent',
+            border: '1.5px solid #16a34a55',
+            color: '#4ade80',
+            borderRadius: 8,
+            padding: '6px 14px',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}
+          type="button"
+        >
+          Scoring Rules
+        </button>
+      </div>
+
+      <div className="lb-grid">
+        {scores.map(({ uid, name, pts }, i) => {
+          const { border, bg, shadow } = getRankStyle(i);
+          return (
+            <div
+              key={uid}
+              className={shadow}
+              style={{
+                background: bg,
+                border: `1.5px solid ${border}55`,
+                borderLeft: `3px solid ${border}`,
+                borderRadius: 12,
+                padding: '16px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 16,
+              }}
+            >
+              {/* Rank */}
+              <div
+                style={{
+                  fontSize: i < 3 ? 28 : 18,
+                  fontWeight: 900,
+                  color: i < 3 ? border : '#475569',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  minWidth: 36,
+                  textAlign: 'center',
+                }}
+              >
+                {MEDALS[i] ?? i + 1}
+              </div>
+
+              {/* Name */}
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: '#e2e8f0',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                  }}
+                >
+                  {name}
+                </div>
+              </div>
+
+              {/* Points */}
+              <div style={{ textAlign: 'right' }}>
+                <div
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 900,
+                    color: i === 0 ? '#fbbf24' : i === 1 ? '#94a3b8' : i === 2 ? '#b87333' : '#4ade80',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    lineHeight: 1,
+                  }}
+                >
+                  {pts}
+                </div>
+                <div style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: 1 }}>pts</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {scores.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#475569', fontSize: 14 }}>
+          No players yet
+        </div>
+      )}
+    </div>
+  );
+}
