@@ -86,7 +86,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
   modal: null,
   nameVal: '',
   pwVal: '',
-  loading: true,
+  loading: Boolean(initialSession),
   saving: false,
   msg: '',
   loginError: '',

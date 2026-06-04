@@ -5,7 +5,16 @@ import type { Prediction, Result } from '../types';
 import { useAppStore } from '../store/useAppStore';
 
 export function useFirebaseSync(): void {
+  const uid = useAppStore((state) => state.uid);
+
   useEffect(() => {
+    if (!uid) {
+      useAppStore.setState({ loading: false });
+      return;
+    }
+
+    useAppStore.setState({ loading: true });
+
     const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
       const users: Record<string, string> = {};
       snap.forEach((d) => {
@@ -38,5 +47,5 @@ export function useFirebaseSync(): void {
       unsubResults();
       unsubPreds();
     };
-  }, []);
+  }, [uid]);
 }
