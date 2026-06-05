@@ -41,7 +41,7 @@ export function LoginPage() {
             textAlign: 'center',
           }}
         >
-          Sign In
+          Sign In/Sign Up
         </h2>
         <p style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginBottom: 28 }}>
           Enter your credentials to join the prediction league
