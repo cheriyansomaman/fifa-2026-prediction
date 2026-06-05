@@ -1,4 +1,4 @@
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { db } from '../firebase';
 import type { Prediction, Result } from '../types';
@@ -15,37 +15,46 @@ export function useFirebaseSync(): void {
 
     useAppStore.setState({ loading: true });
 
-    const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
-      const users: Record<string, string> = {};
-      snap.forEach((d) => {
-        const data = d.data() as { name?: string };
-        if (data.name) {
-          users[d.id] = data.name;
-        }
-      });
-      useAppStore.getState().setUsers(users);
-    });
+    let resultsReady = false;
+    let ownPredsReady = false;
 
-    const unsubResults = onSnapshot(doc(db, 'app', 'results'), (snap) => {
-      const results: Record<number, Result> = snap.exists()
-        ? (snap.data() as Record<number, Result>)
-        : {};
-      useAppStore.getState().setResults(results);
-    });
+    function checkReady() {
+      if (resultsReady && ownPredsReady) {
+        useAppStore.setState({ loading: false });
+      }
+    }
 
-    const unsubPreds = onSnapshot(collection(db, 'predictions'), (snap) => {
-      const preds: Record<string, Record<number, Prediction>> = {};
-      snap.forEach((d) => {
-        preds[d.id] = d.data() as Record<number, Prediction>;
-      });
-      useAppStore.getState().setPreds(preds);
-      useAppStore.setState({ loading: false });
-    });
+    const unsubResults = onSnapshot(
+      doc(db, 'app', 'results'),
+      (snap) => {
+        const results: Record<number, Result> = snap.exists()
+          ? (snap.data() as Record<number, Result>)
+          : {};
+        useAppStore.getState().setResults(results);
+        if (!resultsReady) { resultsReady = true; checkReady(); }
+      },
+      (err) => {
+        console.error('[sync] results:', err.message);
+        if (!resultsReady) { resultsReady = true; checkReady(); }
+      },
+    );
+
+    const unsubOwnPreds = onSnapshot(
+      doc(db, 'predictions', uid),
+      (snap) => {
+        const pred = snap.exists() ? (snap.data() as Record<number, Prediction>) : {};
+        useAppStore.setState((s) => ({ preds: { ...s.preds, [uid]: pred } }));
+        if (!ownPredsReady) { ownPredsReady = true; checkReady(); }
+      },
+      (err) => {
+        console.error('[sync] own-preds:', err.message);
+        if (!ownPredsReady) { ownPredsReady = true; checkReady(); }
+      },
+    );
 
     return () => {
-      unsubUsers();
       unsubResults();
-      unsubPreds();
+      unsubOwnPreds();
     };
   }, [uid]);
 }

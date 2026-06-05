@@ -60,6 +60,7 @@ export interface AppState {
   nameVal: string;
   pwVal: string;
   loading: boolean;
+  allPredsLoading: boolean;
   saving: boolean;
   msg: string;
   loginError: string;

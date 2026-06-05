@@ -1,6 +1,7 @@
 import './styles.css';
 import { useAppStore } from './store/useAppStore';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
+import { useLazySync } from './hooks/useLazySync';
 import { Header } from './components/Header';
 import { Nav } from './components/Nav';
 import { PredictModal } from './components/modals/PredictModal';
@@ -41,6 +42,7 @@ function Modals() {
 
 export default function App() {
   useFirebaseSync();
+  useLazySync();
 
   const { loading, uid, mustChangePassword, msg } = useAppStore();
 

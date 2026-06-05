@@ -15,7 +15,7 @@ function getRankStyle(rank: number) {
 }
 
 export function LeaderboardTab() {
-  const { users, preds, results, ko, setModal } = useAppStore();
+  const { users, preds, results, ko, setModal, allPredsLoading } = useAppStore();
   const allFixtures = [...GF, ...ko];
 
   const scores = Object.entries(users).map(([uid, name]) => {
@@ -135,7 +135,14 @@ export function LeaderboardTab() {
         })}
       </div>
 
-      {scores.length === 0 && (
+      {allPredsLoading && (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#475569', fontSize: 14 }}>
+          <div className="spin" style={{ fontSize: 28, marginBottom: 8 }}>⚽</div>
+          Loading scores…
+        </div>
+      )}
+
+      {!allPredsLoading && scores.length === 0 && (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: '#475569', fontSize: 14 }}>
           No players yet
         </div>
