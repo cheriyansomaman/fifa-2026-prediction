@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fifa-prediction-pwa-v2';
+const CACHE_NAME = 'fifa-prediction-pwa-v3';
 const STATIC_ASSETS = ['/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
