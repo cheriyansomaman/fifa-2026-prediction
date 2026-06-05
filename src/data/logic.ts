@@ -71,6 +71,16 @@ export function standings(
   );
 }
 
+export function qualifyingThirds(results: Record<number, Result>): Set<string> {
+  const thirds = Object.keys(GROUPS)
+    .map((g) => standings(g, results)[2])
+    .filter((t): t is TeamStanding => t !== undefined);
+
+  thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+
+  return new Set(thirds.slice(0, 8).map((t) => t.name));
+}
+
 export function buildKO(results: Record<number, Result>): Fixture[] {
   const groupWinners: Record<string, string> = {};
   const groupRunners: Record<string, string> = {};
@@ -137,12 +147,12 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
     { id: 107, home: gw.L, away: t(2), date: '2026-07-01T16:00:00Z', stage: 'r32', label: 'R32 #7', venue: 'Atlanta' },
     { id: 108, home: gw.G, away: t(3), date: '2026-07-01T20:00:00Z', stage: 'r32', label: 'R32 #8', venue: 'Seattle' },
     { id: 109, home: gw.D, away: t(5), date: '2026-07-02T01:00:00Z', stage: 'r32', label: 'R32 #9', venue: 'San Francisco' },
-    { id: 110, home: gw.B, away: gr.G, date: '2026-07-02T19:00:00Z', stage: 'r32', label: 'R32 #10', venue: 'Kansas City' },
+    { id: 110, home: gw.B, away: t(7), date: '2026-07-02T19:00:00Z', stage: 'r32', label: 'R32 #10', venue: 'Kansas City' },
     { id: 111, home: gw.J, away: gr.H, date: '2026-07-03T01:00:00Z', stage: 'r32', label: 'R32 #11', venue: 'Miami' },
     { id: 112, home: gw.K, away: t(6), date: '2026-07-03T01:30:00Z', stage: 'r32', label: 'R32 #12', venue: 'Dallas' },
     { id: 113, home: gw.H, away: gr.J, date: '2026-07-02T01:00:00Z', stage: 'r32', label: 'R32 #13', venue: 'Los Angeles' },
-    { id: 114, home: gr.D, away: gr.B, date: '2026-07-02T17:00:00Z', stage: 'r32', label: 'R32 #14', venue: 'Philadelphia' },
-    { id: 115, home: gr.A, away: t(7), date: '2026-07-01T20:00:00Z', stage: 'r32', label: 'R32 #15', venue: 'Toronto' },
+    { id: 114, home: gr.D, away: gr.G, date: '2026-07-02T17:00:00Z', stage: 'r32', label: 'R32 #14', venue: 'Philadelphia' },
+    { id: 115, home: gr.A, away: gr.B, date: '2026-07-01T20:00:00Z', stage: 'r32', label: 'R32 #15', venue: 'Toronto' },
     { id: 116, home: gr.L, away: gr.K, date: '2026-07-03T17:00:00Z', stage: 'r32', label: 'R32 #16', venue: 'Vancouver' },
   ];
   allKO.push(...r32);

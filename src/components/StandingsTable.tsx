@@ -5,6 +5,7 @@ import { FlagImg } from './FlagImg';
 interface StandingsTableProps {
   group: string;
   results: Record<number, Result>;
+  qualifyingThirds?: Set<string>;
 }
 
 const RANK_COLORS: Record<number, string> = {
@@ -13,7 +14,12 @@ const RANK_COLORS: Record<number, string> = {
   2: '#fbbf24',
 };
 
-export function StandingsTable({ group, results }: StandingsTableProps) {
+const DIRECT_QUALIFIER_BADGES: Record<number, { label: string; bg: string; color: string }> = {
+  0: { label: 'W', bg: 'rgba(22,163,74,0.2)', color: '#4ade80' },
+  1: { label: 'RU', bg: 'rgba(22,163,74,0.2)', color: '#4ade80' },
+};
+
+export function StandingsTable({ group, results, qualifyingThirds }: StandingsTableProps) {
   const rows = standings(group, results);
 
   return (
@@ -42,6 +48,22 @@ export function StandingsTable({ group, results }: StandingsTableProps) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <FlagImg name={row.name} size={16} />
                 <span style={{ fontWeight: 600 }}>{row.name}</span>
+                {(() => {
+                  const direct = DIRECT_QUALIFIER_BADGES[i];
+                  if (direct) return (
+                    <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, letterSpacing: 0.5, padding: '2px 6px', borderRadius: 4, background: direct.bg, color: direct.color, whiteSpace: 'nowrap', fontFamily: "'Barlow Condensed', sans-serif", textTransform: 'uppercase' }}>
+                      {direct.label}
+                    </span>
+                  );
+                  if (i === 2 && qualifyingThirds?.has(row.name)) {
+                    return (
+                      <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, letterSpacing: 0.5, padding: '2px 6px', borderRadius: 4, background: 'rgba(22,163,74,0.15)', color: '#4ade80', whiteSpace: 'nowrap', fontFamily: "'Barlow Condensed', sans-serif", textTransform: 'uppercase' }}>
+                        To32
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </td>
             <td style={{ textAlign: 'center', padding: '5px 6px' }}>{row.p}</td>

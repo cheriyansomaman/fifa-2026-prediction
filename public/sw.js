@@ -1,5 +1,5 @@
 const CACHE_NAME = 'fifa-prediction-pwa-v2';
-const STATIC_ASSETS = ['/wc2026-logo.png'];
+const STATIC_ASSETS = ['/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

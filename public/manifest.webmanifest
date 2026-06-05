@@ -1,6 +1,6 @@
 {
-  "name": "FIFA World Cup 2026 Prediction League",
-  "short_name": "FIFA Prediction",
+  "name": "My Fifa26",
+  "short_name": "My Fifa26",
   "description": "Track scores and predict outcomes for FIFA 2026.",
   "start_url": "/",
   "scope": "/",
@@ -9,13 +9,13 @@
   "theme_color": "#0f172a",
   "icons": [
     {
-      "src": "/wc2026-logo.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/wc2026-logo.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

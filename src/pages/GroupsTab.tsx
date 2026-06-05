@@ -1,9 +1,11 @@
 import { useAppStore } from '../store/useAppStore';
 import { GROUPS } from '../data/constants';
+import { qualifyingThirds } from '../data/logic';
 import { StandingsTable } from '../components/StandingsTable';
 
 export function GroupsTab() {
   const { results } = useAppStore();
+  const thirds = qualifyingThirds(results);
 
   return (
     <div className="groups-grid">
@@ -30,7 +32,7 @@ export function GroupsTab() {
           >
             Group {group}
           </h3>
-          <StandingsTable group={group} results={results} />
+          <StandingsTable group={group} results={results} qualifyingThirds={thirds} />
         </div>
       ))}
     </div>

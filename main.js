@@ -202,12 +202,12 @@ function buildKO(results){
     {id:107,home:gw.L,away:t(2),date:"2026-07-01T16:00:00Z",stage:"r32",label:"R32 #7",venue:"Atlanta"},
     {id:108,home:gw.G,away:t(3),date:"2026-07-01T20:00:00Z",stage:"r32",label:"R32 #8",venue:"Seattle"},
     {id:109,home:gw.D,away:t(5),date:"2026-07-02T01:00:00Z",stage:"r32",label:"R32 #9",venue:"San Francisco"},
-    {id:110,home:gw.B,away:gr.G,date:"2026-07-02T19:00:00Z",stage:"r32",label:"R32 #10",venue:"Kansas City"},
+    {id:110,home:gw.B,away:t(7),date:"2026-07-02T19:00:00Z",stage:"r32",label:"R32 #10",venue:"Kansas City"},
     {id:111,home:gw.J,away:gr.H,date:"2026-07-03T01:00:00Z",stage:"r32",label:"R32 #11",venue:"Miami"},
     {id:112,home:gw.K,away:t(6),date:"2026-07-03T01:30:00Z",stage:"r32",label:"R32 #12",venue:"Dallas"},
     {id:113,home:gw.H,away:gr.J,date:"2026-07-02T01:00:00Z",stage:"r32",label:"R32 #13",venue:"Los Angeles"},
-    {id:114,home:gr.D,away:gr.B,date:"2026-07-02T17:00:00Z",stage:"r32",label:"R32 #14",venue:"Philadelphia"},
-    {id:115,home:gr.A,away:t(7),date:"2026-07-01T20:00:00Z",stage:"r32",label:"R32 #15",venue:"Toronto"},
+    {id:114,home:gr.D,away:gr.G,date:"2026-07-02T17:00:00Z",stage:"r32",label:"R32 #14",venue:"Philadelphia"},
+    {id:115,home:gr.A,away:gr.B,date:"2026-07-01T20:00:00Z",stage:"r32",label:"R32 #15",venue:"Toronto"},
     {id:116,home:gr.L,away:gr.K,date:"2026-07-03T17:00:00Z",stage:"r32",label:"R32 #16",venue:"Vancouver"},
   ];
   allKO.push(...r32);
@@ -706,8 +706,15 @@ function resultModal(fixture){
 }
 
 // ── Standings Table ───────────────────────────────────────────────────────────
+function qualifyingThirds(results){
+  const thirds=Object.keys(GROUPS).map(g=>standings(g,results)[2]).filter(Boolean);
+  thirds.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
+  return new Set(thirds.slice(0,8).map(t=>t.name));
+}
 function standingsTable(group,resultsOverride){
-  const rows=standings(group,resultsOverride!==undefined?resultsOverride:S.results);
+  const res=resultsOverride!==undefined?resultsOverride:S.results;
+  const rows=standings(group,res);
+  const q3=qualifyingThirds(res);
   return h("table",[css({width:"100%",fontSize:13,borderCollapse:"collapse"})],[
     h("thead",null,[h("tr",null,
       ["#","Team","P","W","D","L","GD","Pts"].map((c,i)=>
@@ -720,7 +727,17 @@ function standingsTable(group,resultsOverride){
       return h("tr",[css({borderTop:"1px solid rgba(30,58,95,0.4)",color})],
         data.map((v,ci)=>{
           const tdCss=css({padding:"11px 8px",textAlign:ci===1?"left":"center",fontWeight:ci===7?900:400,color:ci===7?"#fff":color,lineHeight:1.3});
-          if(ci===1) return h("td",[tdCss],[h("div",[css({display:"flex",alignItems:"center",gap:8})],[flagImg(team.name,16),h("span",null,[team.name])])]);
+          if(ci===1){
+            const directBadges=[{label:"W",bg:"rgba(22,163,74,0.2)",color:"#4ade80"},{label:"RU",bg:"rgba(22,163,74,0.2)",color:"#4ade80"}];
+            const direct=directBadges[i];
+            const is3rd=i===2;
+            const qualifies=is3rd&&q3.has(team.name);
+            const badge=direct||(qualifies?{label:"To32",bg:"rgba(22,163,74,0.15)",color:"#4ade80"}:null);
+            return h("td",[tdCss],[h("div",[css({display:"flex",alignItems:"center",gap:8})],[
+              flagImg(team.name,16),
+              h("span",null,[team.name]),
+              ...(badge?[h("span",[css({marginLeft:"auto",fontSize:10,fontWeight:700,letterSpacing:0.5,padding:"2px 6px",borderRadius:4,background:badge.bg,color:badge.color,whiteSpace:"nowrap",fontFamily:"'Barlow Condensed',sans-serif",textTransform:"uppercase"})],[badge.label])]:[])])]);
+          }
           return h("td",[tdCss],[String(v)]);
         })
       );
