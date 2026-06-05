@@ -83,18 +83,30 @@ Temp passwords force a password change on next login.
 
 ## Local Development
 
-No build step required — pure ES modules loaded directly in the browser.
+Create a local env file from `.env.example` and fill in your Firebase values.
 
 ```bash
-# Serve locally (any static server works)
-npx serve .
-# or
-python3 -m http.server 8080
+cp .env.example .env
+# then edit .env with your Firebase config
 ```
 
-Open `http://localhost:8080` in your browser.
+Run the app locally with Vite:
 
-> Firebase config is embedded in `main.js`. Firestore security rules control write access.
+```bash
+npm install
+npm run dev
+```
+
+Open the local Vite URL shown in the terminal.
+
+> The service worker is only registered in production builds, so local development should load without SW caching delays.
+
+### Environment variables
+
+- Local dev uses `.env` / `.env.local`
+- Netlify build uses the same `VITE_FIREBASE_*` environment variables defined in Netlify site settings
+
+The app reads these values from `src/firebase.ts` via `import.meta.env`.
 
 ---
 

@@ -49,6 +49,15 @@ function genTempPw(): string {
   return Array.from(arr, (n) => chars[n % chars.length]).join('');
 }
 
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('Connection timeout. Please check your internet and try again.')), timeoutMs)
+    ),
+  ]);
+}
+
 type Actions = {
   setTab: (tab: Tab) => void;
   setGrpTab: (grpTab: string) => void;
@@ -124,7 +133,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
     set({ saving: true, loginError: '' });
 
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
+      const userDoc = await withTimeout(getDoc(doc(db, 'users', uid)), 10000);
 
       if (userDoc.exists()) {
         const stored = userDoc.data() as {
@@ -163,7 +172,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
       } else {
         // New user — register
         const hashed = await bcrypt.hash(pw, 10);
-        await setDoc(doc(db, 'users', uid), { name, hashed, created: Date.now() });
+        await withTimeout(setDoc(doc(db, 'users', uid), { name, hashed, created: Date.now() }), 10000);
         saveSession(uid, false);
         set({
           uid, isAdmin: false, saving: false, pwVal: '', nameVal: '',
@@ -171,7 +180,16 @@ export const useAppStore = create<StoreState>((set, get) => ({
         });
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Login failed';
+      let message = 'Login failed';
+      if (err instanceof Error) {
+        if (err.message.includes('offline') || err.message.includes('Offline')) {
+          message = 'No internet connection. Please check your connection and try again.';
+        } else if (err.message.includes('timeout') || err.message.includes('Connection timeout')) {
+          message = 'Connection timeout. Please check your internet and try again.';
+        } else {
+          message = err.message;
+        }
+      }
       set({ saving: false, loginError: message });
     }
   },
