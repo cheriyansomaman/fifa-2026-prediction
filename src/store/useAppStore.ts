@@ -77,6 +77,7 @@ type Actions = {
   changePassword: () => Promise<void>;
   predict: (fixture: Fixture, pred: Prediction) => Promise<void>;
   enterResult: (fixture: Fixture, res: Result) => Promise<void>;
+  updateDisplayName: (displayName: string) => Promise<void>;
   generateTempForUser: (uid: string, opts?: { requestId?: string; whatsapp?: string; countryCode?: string }) => Promise<void>;
   dismissTempPw: () => void;
   setPwRequests: (requests: Record<string, PasswordRequest>) => void;
@@ -189,8 +190,13 @@ export const useAppStore = create<StoreState>((set, get) => ({
           return;
         }
         const hashed = await bcrypt.hash(pw, 10);
+        if (pw.length < 8) {
+          set({ saving: false, loginError: 'Password must be at least 8 characters.' });
+          return;
+        }
         const docData: Record<string, unknown> = { name, hashed, created: Date.now() };
         if (waVal.trim()) { docData.whatsapp = waVal.trim(); docData.countryCode = waCodeVal; }
+        delete docData.role;
         await withTimeout(setDoc(doc(db, 'users', uid), docData), 10000);
         saveSession(uid, false);
         set({
@@ -224,7 +230,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
     const cp = confirmPwVal.trim();
 
     if (!np) { set({ changeError: 'Enter new password' }); return; }
-    if (np.length < 6) { set({ changeError: 'Min 6 characters' }); return; }
+    if (np.length < 8) { set({ changeError: 'Min 8 characters' }); return; }
     if (np !== cp) { set({ changeError: "Passwords don't match" }); return; }
     if (!uid) { set({ changeError: 'Not logged in' }); return; }
 
@@ -258,10 +264,21 @@ export const useAppStore = create<StoreState>((set, get) => ({
   },
 
   enterResult: async (fixture, res) => {
+    if (!get().isAdmin) return;
     set({ saving: true, modal: null });
     await fsSet('app/results', { [fixture.id]: res });
     set({ saving: false, msg: '✓ Result saved' });
     setTimeout(() => set({ msg: '' }), 2500);
+  },
+
+  updateDisplayName: async (displayName) => {
+    const { uid } = get();
+    if (!uid) return;
+    const trimmed = displayName.trim().slice(0, 30);
+    await updateDoc(doc(db, 'users', uid), { displayName: trimmed || deleteField() });
+    if (trimmed) {
+      set((s) => ({ users: { ...s.users, [uid]: trimmed } }));
+    }
   },
 
   // ── Admin ────────────────────────────────────────────────────────────────
@@ -289,7 +306,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
     try {
       const userSnap = await withTimeout(getDoc(doc(db, 'users', uid)), 10000);
       if (!userSnap.exists()) {
-        throw new Error('Username not found. Check your username and try again.');
+        return;
       }
       const userData = userSnap.data() as { whatsapp?: string; countryCode?: string };
       if (userData.whatsapp && userData.countryCode) {

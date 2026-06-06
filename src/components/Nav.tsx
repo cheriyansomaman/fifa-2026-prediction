@@ -26,8 +26,8 @@ export function Nav() {
         position: 'sticky',
         top: 68,
         zIndex: 90,
-        background: '#020c14',
-        borderBottom: '1px solid #0f172a',
+        background: '#131728',
+        borderBottom: '1px solid #1C2340',
       }}
     >
       <div className="nav-inner" style={{ padding: '0 20px' }}>
@@ -40,8 +40,8 @@ export function Nav() {
               style={{
                 background: 'transparent',
                 border: 'none',
-                borderBottom: isActive ? '2px solid #16a34a' : '2px solid transparent',
-                color: isActive ? '#4ade80' : '#64748b',
+                borderBottom: isActive ? '2px solid #00C460' : '2px solid transparent',
+                color: isActive ? '#3DFFA3' : '#64748b',
                 padding: '14px 16px',
                 fontSize: 12,
                 fontWeight: isActive ? 700 : 600,

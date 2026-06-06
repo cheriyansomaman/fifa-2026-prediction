@@ -9,7 +9,7 @@ interface MatchCardProps {
 }
 
 function getBorderColor(hasRes: boolean, hasPred: boolean, isTBC: boolean, open: boolean): string {
-  if (hasRes) return '#16a34a';
+  if (hasRes) return '#00C460';
   if (hasPred) return '#1d4ed8';
   if (isTBC) return '#1e293b';
   if (open) return '#1e3a5f';
@@ -17,11 +17,11 @@ function getBorderColor(hasRes: boolean, hasPred: boolean, isTBC: boolean, open:
 }
 
 function getBgColor(hasRes: boolean, hasPred: boolean, isTBC: boolean, open: boolean): string {
-  if (hasRes) return '#052e16';
-  if (hasPred) return '#0c1a3a';
-  if (isTBC) return '#0f172a';
-  if (open) return '#0a1a30';
-  return '#1c0a0a';
+  if (hasRes) return '#0E1C14';
+  if (hasPred) return '#111840';
+  if (isTBC) return '#181F3C';
+  if (open) return '#141F3A';
+  return '#1E0E0E';
 }
 
 export function MatchCard({ fixture }: MatchCardProps) {
@@ -51,9 +51,9 @@ export function MatchCard({ fixture }: MatchCardProps) {
       style={{
         fontSize: 10,
         fontWeight: 700,
-        color: '#4ade80',
-        background: '#052e16',
-        border: '1px solid #16a34a44',
+        color: '#3DFFA3',
+        background: '#031810',
+        border: '1px solid #00C46040',
         borderRadius: 4,
         padding: '2px 7px',
         letterSpacing: 1,
@@ -124,9 +124,9 @@ export function MatchCard({ fixture }: MatchCardProps) {
               style={{
                 fontSize: 11,
                 fontWeight: 800,
-                color: '#4ade80',
-                background: '#052e16',
-                border: '1px solid #16a34a55',
+                color: '#3DFFA3',
+                background: '#031810',
+                border: '1px solid #00C46050',
                 borderRadius: 4,
                 padding: '2px 8px',
                 letterSpacing: 0.5,
@@ -154,7 +154,7 @@ export function MatchCard({ fixture }: MatchCardProps) {
             style={{
               fontSize: hasRes ? 26 : 16,
               fontWeight: 800,
-              color: hasRes ? '#4ade80' : '#475569',
+              color: hasRes ? '#3DFFA3' : '#475569',
               fontFamily: "'Barlow Condensed', sans-serif",
               letterSpacing: hasRes ? 2 : 1,
             }}
@@ -214,14 +214,16 @@ export function MatchCard({ fixture }: MatchCardProps) {
               style={{
                 fontSize: 11,
                 fontWeight: 700,
-                padding: '6px 14px',
-                borderRadius: 6,
+                padding: '7px 16px',
+                borderRadius: 8,
                 background: 'transparent',
-                border: '1.5px solid #16a34a',
-                color: '#4ade80',
+                border: '1.5px solid #00C460',
+                color: '#3DFFA3',
                 cursor: 'pointer',
-                letterSpacing: 1,
+                letterSpacing: 1.5,
                 textTransform: 'uppercase',
+                boxShadow: predHover ? '0 0 14px rgba(0,196,96,0.3)' : 'none',
+                transition: 'box-shadow 150ms',
               }}
               onMouseEnter={() => setPredHover(true)}
               onMouseLeave={() => setPredHover(false)}
@@ -248,10 +250,10 @@ export function MatchCard({ fixture }: MatchCardProps) {
             style={{
               fontSize: 11,
               fontWeight: 700,
-              padding: '6px 14px',
-              borderRadius: 6,
+              padding: '7px 16px',
+              borderRadius: 8,
               cursor: 'pointer',
-              letterSpacing: 1,
+              letterSpacing: 1.5,
               textTransform: 'uppercase',
             }}
             onMouseEnter={() => setResultHover(true)}

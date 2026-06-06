@@ -54,7 +54,7 @@ export default function App() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#020c14',
+          background: '#131728',
         }}
       >
         <div style={{ textAlign: 'center' }}>
@@ -82,7 +82,7 @@ export default function App() {
 
   if (!uid) {
     return (
-      <div style={{ background: '#020c14', minHeight: '100vh' }}>
+      <div style={{ background: '#131728', minHeight: '100vh' }}>
         <LoginPage />
       </div>
     );
@@ -90,14 +90,14 @@ export default function App() {
 
   if (mustChangePassword) {
     return (
-      <div style={{ background: '#020c14', minHeight: '100vh' }}>
+      <div style={{ background: '#131728', minHeight: '100vh' }}>
         <ChangePasswordPage />
       </div>
     );
   }
 
   return (
-    <div style={{ background: '#020c14', minHeight: '100vh' }}>
+    <div style={{ background: '#131728', minHeight: '100vh' }}>
       <Header />
       <Nav />
 

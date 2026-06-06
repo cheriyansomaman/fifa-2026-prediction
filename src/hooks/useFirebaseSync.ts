@@ -39,9 +39,23 @@ export function useFirebaseSync(): void {
       (err) => console.error('[sync] own-preds:', err.message),
     );
 
+    const unsubUser = onSnapshot(
+      doc(db, 'users', uid),
+      (snap) => {
+        const data = snap.data() as { role?: string; name?: string; displayName?: string } | undefined;
+        const label = data?.displayName?.trim() || data?.name;
+        useAppStore.setState((s) => ({
+          isAdmin: data?.role === 'admin',
+          users: label ? { ...s.users, [uid]: label } : s.users,
+        }));
+      },
+      (err) => console.error('[sync] user:', err.message),
+    );
+
     return () => {
       unsubResults();
       unsubOwnPreds();
+      unsubUser();
     };
   }, [uid]);
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 
 const COUNTRY_CODES = [
@@ -74,6 +74,10 @@ export function LoginPage() {
     waVal, waCodeVal, setWaVal, setWaCodeVal,
   } = useAppStore();
 
+  const [showRedCard, setShowRedCard] = useState(false);
+  const [showYellowCard, setShowYellowCard] = useState(false);
+  const [showReqYellowCard, setShowReqYellowCard] = useState(false);
+  const [showReqRedCard, setShowReqRedCard] = useState(false);
   const [showRequest, setShowRequest] = useState(false);
   const [reqName, setReqName] = useState('');
   const [reqCode, setReqCode] = useState('+44');
@@ -81,6 +85,35 @@ export function LoginPage() {
   const [reqSaving, setReqSaving] = useState(false);
   const [reqMsg, setReqMsg] = useState('');
   const [reqError, setReqError] = useState('');
+  const [lastRequestAt, setLastRequestAt] = useState(0);
+
+  useEffect(() => {
+    if (!loginError) return;
+    const isValidation = loginError.includes('required') || loginError.includes('at least');
+    if (isValidation) {
+      setShowYellowCard(true);
+      const t = setTimeout(() => setShowYellowCard(false), 1800);
+      return () => clearTimeout(t);
+    } else {
+      setShowRedCard(true);
+      const t = setTimeout(() => setShowRedCard(false), 1800);
+      return () => clearTimeout(t);
+    }
+  }, [loginError]);
+
+  useEffect(() => {
+    if (!reqError) return;
+    const isValidation = reqError.includes('required') || reqError.includes('wait');
+    if (isValidation) {
+      setShowReqYellowCard(true);
+      const t = setTimeout(() => setShowReqYellowCard(false), 1800);
+      return () => clearTimeout(t);
+    } else {
+      setShowReqRedCard(true);
+      const t = setTimeout(() => setShowReqRedCard(false), 1800);
+      return () => clearTimeout(t);
+    }
+  }, [reqError]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +128,12 @@ export function LoginPage() {
     if (!name) { setReqError('Username required'); return; }
     if (!code || code === '+') { setReqError('Country code required'); return; }
     if (!wa) { setReqError('WhatsApp number required'); return; }
+    if (Date.now() - lastRequestAt < 60_000) {
+      setReqError('Please wait 60 seconds between requests.');
+      return;
+    }
 
+    setLastRequestAt(Date.now());
     setReqSaving(true);
     setReqError('');
     try {
@@ -280,22 +318,41 @@ export function LoginPage() {
                 </div>
               </div>
 
-              {loginError && (
-                <div
-                  className="toast-msg"
-                  style={{
-                    background: '#450a0a',
-                    border: '1px solid #7f1d1d',
-                    borderRadius: 8,
-                    padding: '8px 12px',
-                    fontSize: 13,
-                    color: '#f87171',
-                    marginBottom: 16,
-                  }}
-                >
-                  {loginError}
+              {showYellowCard && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
+                  <svg className="yellow-card-anim" width="36" height="50" viewBox="0 0 36 50" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1.5" y="1.5" width="33" height="47" rx="5" fill="#EAB308" stroke="#CA8A04" strokeWidth="1.5"/>
+                    <rect x="6" y="6" width="9" height="18" rx="3" fill="white" opacity="0.2"/>
+                  </svg>
                 </div>
               )}
+              {showRedCard && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
+                  <svg className="red-card-anim" width="36" height="50" viewBox="0 0 36 50" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1.5" y="1.5" width="33" height="47" rx="5" fill="#EF4444" stroke="#B91C1C" strokeWidth="1.5"/>
+                    <rect x="6" y="6" width="9" height="18" rx="3" fill="white" opacity="0.18"/>
+                  </svg>
+                </div>
+              )}
+              {loginError && (() => {
+                const isValidation = loginError.includes('required') || loginError.includes('at least');
+                return (
+                  <div
+                    className="toast-msg"
+                    style={{
+                      background: isValidation ? '#422006' : '#450a0a',
+                      border: `1px solid ${isValidation ? '#854d0e' : '#7f1d1d'}`,
+                      borderRadius: 8,
+                      padding: '8px 12px',
+                      fontSize: 13,
+                      color: isValidation ? '#fbbf24' : '#f87171',
+                      marginBottom: 16,
+                    }}
+                  >
+                    {loginError}
+                  </div>
+                );
+              })()}
 
               <button
                 type="submit"
@@ -332,7 +389,7 @@ export function LoginPage() {
                 Forgot password? Request a temporary one
               </button>
               <a
-                href={`https://wa.me/919633282270?text=${encodeURIComponent('Hi Admin of MyFifa26, I need a help.')}`}
+                href={`https://wa.me/${(import.meta.env.VITE_ADMIN_WHATSAPP as string | undefined)?.replace(/\D/g, '') ?? ''}?text=${encodeURIComponent('Hi Admin of MyFifa26, I need a help.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ fontSize: 12, color: '#4ade80', textDecoration: 'none' }}
@@ -409,21 +466,40 @@ export function LoginPage() {
                 />
               </div>
 
-              {reqError && (
-                <div
-                  style={{
-                    background: '#450a0a',
-                    border: '1px solid #7f1d1d',
-                    borderRadius: 8,
-                    padding: '8px 12px',
-                    fontSize: 13,
-                    color: '#f87171',
-                    marginBottom: 14,
-                  }}
-                >
-                  {reqError}
+              {showReqYellowCard && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
+                  <svg className="yellow-card-anim" width="36" height="50" viewBox="0 0 36 50" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1.5" y="1.5" width="33" height="47" rx="5" fill="#EAB308" stroke="#CA8A04" strokeWidth="1.5"/>
+                    <rect x="6" y="6" width="9" height="18" rx="3" fill="white" opacity="0.2"/>
+                  </svg>
                 </div>
               )}
+              {showReqRedCard && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
+                  <svg className="red-card-anim" width="36" height="50" viewBox="0 0 36 50" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1.5" y="1.5" width="33" height="47" rx="5" fill="#EF4444" stroke="#B91C1C" strokeWidth="1.5"/>
+                    <rect x="6" y="6" width="9" height="18" rx="3" fill="white" opacity="0.18"/>
+                  </svg>
+                </div>
+              )}
+              {reqError && (() => {
+                const isValidation = reqError.includes('required') || reqError.includes('wait');
+                return (
+                  <div
+                    style={{
+                      background: isValidation ? '#422006' : '#450a0a',
+                      border: `1px solid ${isValidation ? '#854d0e' : '#7f1d1d'}`,
+                      borderRadius: 8,
+                      padding: '8px 12px',
+                      fontSize: 13,
+                      color: isValidation ? '#fbbf24' : '#f87171',
+                      marginBottom: 14,
+                    }}
+                  >
+                    {reqError}
+                  </div>
+                );
+              })()}
               {reqMsg && (
                 <div
                   style={{

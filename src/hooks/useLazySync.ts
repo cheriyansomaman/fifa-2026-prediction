@@ -37,8 +37,9 @@ export function useLazySync(): void {
         (snap) => {
           const users: Record<string, string> = {};
           snap.forEach((d) => {
-            const data = d.data() as { name?: string };
-            if (data.name) users[d.id] = data.name;
+            const data = d.data() as { name?: string; displayName?: string };
+            const label = data.displayName?.trim() || data.name;
+            if (label) users[d.id] = label;
           });
           useAppStore.getState().setUsers(users);
         },
