@@ -184,6 +184,10 @@ export const useAppStore = create<StoreState>((set, get) => ({
         set({ saving: false, loginError: 'Invalid password' });
       } else {
         // New user — register
+        if (!waVal.trim()) {
+          set({ saving: false, loginError: 'WhatsApp number required for new registration.' });
+          return;
+        }
         const hashed = await bcrypt.hash(pw, 10);
         const docData: Record<string, unknown> = { name, hashed, created: Date.now() };
         if (waVal.trim()) { docData.whatsapp = waVal.trim(); docData.countryCode = waCodeVal; }

@@ -7,6 +7,12 @@ function buildWaLink(countryCode: string, whatsapp: string, pw: string, name: st
   return `https://wa.me/${num}?text=${text}`;
 }
 
+function buildWaDismissLink(countryCode: string, whatsapp: string, name: string): string {
+  const num = countryCode.replace('+', '') + whatsapp.replace(/\D/g, '');
+  const text = encodeURIComponent(`Hi ${name}, your password recovery request for the FIFA 2026 prediction league has been dismissed. This is likely because no WhatsApp number or a different WhatsApp number is registered to this username. Please contact the admin directly if you need further help.`);
+  return `https://wa.me/${num}?text=${text}`;
+}
+
 export function UsersTab() {
   const { users, pwRequests, tempPwDisplay, generateTempForUser, dismissTempPw, dismissPwRequest } =
     useAppStore();
@@ -196,6 +202,32 @@ export function UsersTab() {
                       >
                         Generate &amp; Send
                       </button>
+                      {req.whatsapp && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await dismissPwRequest(id);
+                            window.open(
+                              buildWaDismissLink(req.countryCode, req.whatsapp, req.name),
+                              '_blank',
+                              'noopener,noreferrer',
+                            );
+                          }}
+                          style={{
+                            background: 'transparent',
+                            border: '1.5px solid #334155',
+                            color: '#94a3b8',
+                            borderRadius: 7,
+                            padding: '6px 12px',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          📲 Dismiss &amp; Notify
+                        </button>
+                      )}
                       <button
                         onClick={() => dismissPwRequest(id)}
                         style={{
@@ -207,6 +239,7 @@ export function UsersTab() {
                           fontSize: 12,
                           fontWeight: 600,
                           cursor: 'pointer',
+                          whiteSpace: 'nowrap',
                         }}
                         type="button"
                       >

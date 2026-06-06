@@ -111,9 +111,75 @@ export function LoginPage() {
     setReqSaving(false);
   };
 
+  const balls = [
+    { size: 14, left: 5,  delay: 0,  dur: 12 },
+    { size: 20, left: 14, delay: 2,  dur: 16 },
+    { size: 16, left: 23, delay: 5,  dur: 14 },
+    { size: 24, left: 35, delay: 8,  dur: 20 },
+    { size: 12, left: 47, delay: 1,  dur: 13 },
+    { size: 18, left: 58, delay: 4,  dur: 17 },
+    { size: 22, left: 67, delay: 7,  dur: 15 },
+    { size: 14, left: 76, delay: 3,  dur: 19 },
+    { size: 20, left: 85, delay: 9,  dur: 11 },
+    { size: 16, left: 93, delay: 6,  dur: 18 },
+  ];
+
   return (
+    <>
+      <style>{`
+        @keyframes floatUp {
+          0%   { transform: translateY(0) rotate(0deg);   opacity: 0.18; }
+          50%  { opacity: 0.28; }
+          100% { transform: translateY(-110vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.12; transform: scale(1); }
+          50%       { opacity: 0.28; transform: scale(1.15); }
+        }
+      `}</style>
+
+      {/* Football-themed background */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none',
+        background: 'linear-gradient(160deg, #020c14 0%, #031a0a 30%, #05122a 65%, #020c14 100%)' }}>
+
+        {/* Stadium glow blobs */}
+        <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%',
+          background: 'radial-gradient(circle, #16a34a28 0%, transparent 70%)',
+          top: '-8%', left: '-8%', animation: 'glowPulse 7s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', width: 650, height: 650, borderRadius: '50%',
+          background: 'radial-gradient(circle, #1e40af1a 0%, transparent 70%)',
+          bottom: '-15%', right: '-12%', animation: 'glowPulse 9s ease-in-out infinite 3s' }} />
+        <div style={{ position: 'absolute', width: 350, height: 350, borderRadius: '50%',
+          background: 'radial-gradient(circle, #16a34a18 0%, transparent 70%)',
+          top: '35%', right: '20%', animation: 'glowPulse 6s ease-in-out infinite 1.5s' }} />
+
+        {/* Pitch centre-circle */}
+        <div style={{ position: 'absolute', left: '50%', bottom: '-120px', transform: 'translateX(-50%)',
+          width: 340, height: 340, borderRadius: '50%',
+          border: '1.5px solid #16a34a14', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', left: '50%', bottom: '-180px', transform: 'translateX(-50%)',
+          width: 2, height: 260, background: '#16a34a10' }} />
+
+        {/* Floating footballs */}
+        {balls.map((b, i) => (
+          <div key={i} style={{
+            position: 'absolute', bottom: '-40px', left: `${b.left}%`,
+            fontSize: b.size, lineHeight: 1,
+            animation: `floatUp ${b.dur}s linear ${b.delay}s infinite`,
+            userSelect: 'none',
+          }}>⚽</div>
+        ))}
+
+        {/* Trophy + star accents */}
+        <div style={{ position: 'absolute', top: '12%', right: '8%', fontSize: 40, opacity: 0.06,
+          transform: 'rotate(12deg)' }}>🏆</div>
+        <div style={{ position: 'absolute', top: '60%', left: '5%', fontSize: 32, opacity: 0.06,
+          transform: 'rotate(-8deg)' }}>🏟️</div>
+      </div>
+
     <div
       style={{
+        position: 'relative', zIndex: 1,
         minHeight: 'calc(100vh - 68px)',
         display: 'flex',
         alignItems: 'center',
@@ -157,7 +223,7 @@ export function LoginPage() {
                 <label
                   style={{ display: 'block', fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}
                 >
-                  Username
+                  Username <span style={{ color: '#f87171' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -173,7 +239,7 @@ export function LoginPage() {
                 <label
                   style={{ display: 'block', fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}
                 >
-                  Password
+                  Password <span style={{ color: '#f87171' }}>*</span>
                 </label>
                 <input
                   type="password"
@@ -189,7 +255,7 @@ export function LoginPage() {
                 <label
                   style={{ display: 'block', fontSize: 11, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}
                 >
-                  WhatsApp (optional — for password recovery)
+                  WhatsApp <span style={{ color: '#f87171' }}>*</span> <span style={{ color: '#475569', textTransform: 'none', letterSpacing: 0, fontWeight: 400 }}>(optional for existing accounts)</span>
                 </label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <select
@@ -210,7 +276,7 @@ export function LoginPage() {
                   />
                 </div>
                 <div style={{ fontSize: 10, color: '#475569', marginTop: 4 }}>
-                  Stored only on new accounts. Ignored if you already have an account.
+                  Required for new accounts. Ignored if you already have an account.
                 </div>
               </div>
 
@@ -249,7 +315,7 @@ export function LoginPage() {
               </button>
             </form>
 
-            <div style={{ textAlign: 'center', marginTop: 20 }}>
+            <div style={{ textAlign: 'center', marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button
                 type="button"
                 onClick={() => setShowRequest(true)}
@@ -265,6 +331,14 @@ export function LoginPage() {
               >
                 Forgot password? Request a temporary one
               </button>
+              <a
+                href={`https://wa.me/919633282270?text=${encodeURIComponent('Hi Admin of MyFifa26, I need a help.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 12, color: '#4ade80', textDecoration: 'none' }}
+              >
+                📲 Contact Admin on WhatsApp
+              </a>
             </div>
           </>
         ) : (
@@ -405,5 +479,6 @@ export function LoginPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
