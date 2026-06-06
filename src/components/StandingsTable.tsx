@@ -21,6 +21,7 @@ const DIRECT_QUALIFIER_BADGES: Record<number, { label: string; bg: string; color
 
 export function StandingsTable({ group, results, qualifyingThirds }: StandingsTableProps) {
   const rows = standings(group, results);
+  const anyPlayed = rows.some((r) => r.p > 0);
 
   return (
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -48,7 +49,7 @@ export function StandingsTable({ group, results, qualifyingThirds }: StandingsTa
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <FlagImg name={row.name} size={16} />
                 <span style={{ fontWeight: 600 }}>{row.name}</span>
-                {(() => {
+                {anyPlayed && (() => {
                   const direct = DIRECT_QUALIFIER_BADGES[i];
                   if (direct) return (
                     <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, letterSpacing: 0.5, padding: '2px 6px', borderRadius: 4, background: direct.bg, color: direct.color, whiteSpace: 'nowrap', fontFamily: "'Barlow Condensed', sans-serif", textTransform: 'uppercase' }}>
