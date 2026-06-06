@@ -6,19 +6,27 @@ import { StandingsTable } from '../components/StandingsTable';
 
 const ALL_GROUPS = ['All', ...Object.keys(GROUPS)];
 
+type MatchFilter = 'upcoming' | 'finished';
+
 export function FixturesTab() {
   const { ko, results, grpTab, setGrpTab } = useAppStore();
   const [hoverPill, setHoverPill] = useState<string | null>(null);
+  const [matchFilter, setMatchFilter] = useState<MatchFilter>('upcoming');
 
   const allFixtures = [...GF, ...ko];
-  const filteredFixtures = grpTab === 'All'
+  const groupFiltered = grpTab === 'All'
     ? allFixtures
     : GF.filter((f) => f.group === grpTab);
+  const filteredFixtures = groupFiltered.filter((f) =>
+    matchFilter === 'finished'
+      ? results[f.id]?.homeGoals !== undefined
+      : results[f.id]?.homeGoals === undefined
+  );
 
   return (
     <div>
-      {/* Filter pills */}
-      <div className="pills-row" style={{ marginBottom: 20 }}>
+      {/* Group filter pills */}
+      <div className="pills-row" style={{ marginBottom: 12 }}>
         {ALL_GROUPS.map((g) => {
           const isActive = grpTab === g;
           const isHover = hoverPill === g;
@@ -52,6 +60,31 @@ export function FixturesTab() {
         })}
       </div>
 
+      {/* Upcoming / Finished toggle */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderRadius: 10, overflow: 'hidden', border: '1px solid #1e293b', width: 'fit-content' }}>
+        {(['upcoming', 'finished'] as MatchFilter[]).map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setMatchFilter(f)}
+            style={{
+              padding: '7px 20px',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              border: 'none',
+              background: matchFilter === f ? '#00C460' : '#0f172a',
+              color: matchFilter === f ? '#fff' : '#64748b',
+              transition: 'background 150ms, color 150ms',
+            }}
+          >
+            {f === 'upcoming' ? 'Upcoming' : 'Finished'}
+          </button>
+        ))}
+      </div>
+
       <div className="fixtures-cols">
         {/* Match list */}
         <div>
@@ -60,7 +93,7 @@ export function FixturesTab() {
           ))}
           {filteredFixtures.length === 0 && (
             <div style={{ color: '#475569', textAlign: 'center', padding: 40, fontSize: 14 }}>
-              No matches found
+              No {matchFilter} matches{grpTab !== 'All' ? ` in Group ${grpTab}` : ''}
             </div>
           )}
         </div>
