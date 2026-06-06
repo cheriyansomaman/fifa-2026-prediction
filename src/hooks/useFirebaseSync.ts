@@ -15,15 +15,6 @@ export function useFirebaseSync(): void {
 
     useAppStore.setState({ loading: true });
 
-    let resultsReady = false;
-    let ownPredsReady = false;
-
-    function checkReady() {
-      if (resultsReady && ownPredsReady) {
-        useAppStore.setState({ loading: false });
-      }
-    }
-
     const unsubResults = onSnapshot(
       doc(db, 'app', 'results'),
       (snap) => {
@@ -31,11 +22,11 @@ export function useFirebaseSync(): void {
           ? (snap.data() as Record<number, Result>)
           : {};
         useAppStore.getState().setResults(results);
-        if (!resultsReady) { resultsReady = true; checkReady(); }
+        useAppStore.setState({ loading: false });
       },
       (err) => {
         console.error('[sync] results:', err.message);
-        if (!resultsReady) { resultsReady = true; checkReady(); }
+        useAppStore.setState({ loading: false });
       },
     );
 
@@ -44,12 +35,8 @@ export function useFirebaseSync(): void {
       (snap) => {
         const pred = snap.exists() ? (snap.data() as Record<number, Prediction>) : {};
         useAppStore.setState((s) => ({ preds: { ...s.preds, [uid]: pred } }));
-        if (!ownPredsReady) { ownPredsReady = true; checkReady(); }
       },
-      (err) => {
-        console.error('[sync] own-preds:', err.message);
-        if (!ownPredsReady) { ownPredsReady = true; checkReady(); }
-      },
+      (err) => console.error('[sync] own-preds:', err.message),
     );
 
     return () => {

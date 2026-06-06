@@ -6,7 +6,7 @@ export function flag(name: string): string {
 }
 
 export function predOpen(kickoff: string): boolean {
-  return Date.now() < new Date(kickoff).getTime() - 3_600_000;
+  return Date.now() < new Date(kickoff).getTime();
 }
 
 export function fmtDate(iso: string): string {

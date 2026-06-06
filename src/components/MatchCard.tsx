@@ -46,7 +46,7 @@ export function MatchCard({ fixture }: MatchCardProps) {
     ? `${res.homeGoals} – ${res.awayGoals}`
     : 'VS';
 
-  const statusBadge = isTBC ? null : open ? (
+  const statusBadge = isTBC || hasRes ? null : open ? (
     <span
       style={{
         fontSize: 10,
@@ -62,7 +62,7 @@ export function MatchCard({ fixture }: MatchCardProps) {
     >
       ● OPEN
     </span>
-  ) : hasRes ? null : (
+  ) : (
     <span
       style={{
         fontSize: 10,

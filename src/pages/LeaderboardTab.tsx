@@ -30,6 +30,7 @@ export function LeaderboardTab() {
   });
 
   scores.sort((a, b) => b.pts - a.pts);
+  const top20 = scores.slice(0, 20);
 
   return (
     <div>
@@ -68,7 +69,7 @@ export function LeaderboardTab() {
       </div>
 
       <div className="lb-grid">
-        {scores.map(({ uid, name, pts }, i) => {
+        {top20.map(({ uid, name, pts }, i) => {
           const { border, bg, shadow } = getRankStyle(i);
           return (
             <div

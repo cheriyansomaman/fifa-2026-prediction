@@ -1,9 +1,20 @@
 import logoUrl from '../wc2026-logo.png';
 import { useAppStore } from '../store/useAppStore';
+import { GF } from '../data/constants';
+import { calcPts } from '../data/logic';
 
 export function Header() {
-  const { uid, users, isAdmin, logout } = useAppStore();
+  const { uid, users, isAdmin, logout, preds, results, ko } = useAppStore();
   const displayName = uid ? (users[uid] ?? uid) : null;
+
+  const myScore = uid
+    ? [...GF, ...ko].reduce((sum, f) => {
+        const pred = preds[uid]?.[f.id];
+        const res = results[f.id];
+        if (!pred || !res || res.homeGoals === undefined) return sum;
+        return sum + calcPts(pred, res, f);
+      }, 0)
+    : 0;
 
   return (
     <header
@@ -52,7 +63,9 @@ export function Header() {
         {uid && displayName && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>{displayName}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>
+                {displayName}
+              </div>
               {isAdmin && (
                 <div
                   style={{
@@ -67,6 +80,22 @@ export function Header() {
                 </div>
               )}
             </div>
+            {myScore > 0 && (
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 900,
+                    color: '#4ade80',
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    lineHeight: 1,
+                  }}
+                >
+                  {myScore}
+                </div>
+                <div style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600 }}>pts</div>
+              </div>
+            )}
             <button
               onClick={logout}
               style={{
