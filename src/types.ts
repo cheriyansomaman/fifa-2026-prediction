@@ -40,6 +40,17 @@ export interface TeamStanding {
 export interface TempPwDisplay {
   uid: string;
   pw: string;
+  whatsapp?: string;
+  countryCode?: string;
+}
+
+export interface PasswordRequest {
+  uid: string;
+  name: string;
+  countryCode: string;
+  whatsapp: string;
+  requestedAt: number;
+  verified: boolean;
 }
 
 export type Modal =
@@ -69,4 +80,7 @@ export interface AppState {
   confirmPwVal: string;
   changeError: string;
   tempPwDisplay: TempPwDisplay | null;
+  pwRequests: Record<string, PasswordRequest>;
+  waVal: string;
+  waCodeVal: string;
 }

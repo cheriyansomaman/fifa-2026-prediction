@@ -1,7 +1,16 @@
+import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 
+function buildWaLink(countryCode: string, whatsapp: string, pw: string, name: string): string {
+  const num = countryCode.replace('+', '') + whatsapp.replace(/\D/g, '');
+  const text = encodeURIComponent(`Hi ${name}! Your temporary FIFA 2026 prediction league password is: ${pw}\n\nPlease log in and change it immediately.`);
+  return `https://wa.me/${num}?text=${text}`;
+}
+
 export function UsersTab() {
-  const { users, tempPwDisplay, generateTempForUser, dismissTempPw } = useAppStore();
+  const { users, pwRequests, tempPwDisplay, generateTempForUser, dismissTempPw, dismissPwRequest } =
+    useAppStore();
+  const [unverifiedConfirmed, setUnverifiedConfirmed] = useState<Record<string, boolean>>({});
 
   return (
     <div>
@@ -53,24 +62,177 @@ export function UsersTab() {
           <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 12 }}>
             Share this password with the user. They will be asked to change it on first login.
           </div>
-          <button
-            onClick={dismissTempPw}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {tempPwDisplay.whatsapp && tempPwDisplay.countryCode && (
+              <a
+                href={buildWaLink(tempPwDisplay.countryCode, tempPwDisplay.whatsapp, tempPwDisplay.pw, users[tempPwDisplay.uid] ?? tempPwDisplay.uid)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-sport btn-green"
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                📲 Send via WhatsApp
+              </a>
+            )}
+            <button
+              onClick={dismissTempPw}
+              style={{
+                background: 'transparent',
+                border: '1.5px solid #334155',
+                color: '#94a3b8',
+                borderRadius: 8,
+                padding: '6px 16px',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+              }}
+              type="button"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Pending password requests */}
+      {Object.keys(pwRequests).length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <h3
             style={{
-              background: 'transparent',
-              border: '1.5px solid #334155',
-              color: '#94a3b8',
-              borderRadius: 8,
-              padding: '6px 16px',
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: 14,
+              fontWeight: 900,
+              color: '#fbbf24',
               textTransform: 'uppercase',
-              letterSpacing: 1,
+              letterSpacing: 2,
+              marginBottom: 12,
             }}
-            type="button"
           >
-            Dismiss
-          </button>
+            Pending Password Requests ({Object.keys(pwRequests).length})
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {Object.entries(pwRequests).map(([id, req]) => {
+              const isVerified = req.verified ?? false;
+              const canGenerate = isVerified || (unverifiedConfirmed[id] ?? false);
+              return (
+                <div
+                  key={id}
+                  style={{
+                    background: '#1c1002',
+                    border: '1.5px solid #f59e0b55',
+                    borderRadius: 10,
+                    padding: '12px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 10,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 140 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0' }}>{req.name}</div>
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                        {req.countryCode} {req.whatsapp}
+                      </div>
+                      <div style={{ fontSize: 10, color: '#475569', marginTop: 2, fontFamily: 'monospace' }}>
+                        {new Date(req.requestedAt).toLocaleString()}
+                      </div>
+                      <div style={{ marginTop: 6 }}>
+                        {isVerified ? (
+                          <span style={{
+                            fontSize: 11, fontWeight: 700, color: '#4ade80',
+                            background: '#052e16', border: '1px solid #16a34a',
+                            borderRadius: 5, padding: '2px 8px',
+                          }}>
+                            ✓ Verified
+                          </span>
+                        ) : (
+                          <span style={{
+                            fontSize: 11, fontWeight: 700, color: '#f87171',
+                            background: '#450a0a', border: '1px solid #7f1d1d',
+                            borderRadius: 5, padding: '2px 8px',
+                          }}>
+                            ⚠ UNVERIFIED — verify identity manually
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignSelf: 'flex-start' }}>
+                      <button
+                        onClick={() =>
+                          generateTempForUser(req.uid, {
+                            requestId: id,
+                            whatsapp: req.whatsapp,
+                            countryCode: req.countryCode,
+                          })
+                        }
+                        disabled={!canGenerate}
+                        className="btn-sport btn-amber"
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: 7,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: canGenerate ? 'pointer' : 'not-allowed',
+                          opacity: canGenerate ? 1 : 0.45,
+                          letterSpacing: 1,
+                          textTransform: 'uppercase',
+                          whiteSpace: 'nowrap',
+                        }}
+                        type="button"
+                      >
+                        Generate &amp; Send
+                      </button>
+                      <button
+                        onClick={() => dismissPwRequest(id)}
+                        style={{
+                          background: 'transparent',
+                          border: '1.5px solid #334155',
+                          color: '#64748b',
+                          borderRadius: 7,
+                          padding: '6px 12px',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                        type="button"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+
+                  {!isVerified && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={unverifiedConfirmed[id] ?? false}
+                        onChange={(e) =>
+                          setUnverifiedConfirmed((prev) => ({ ...prev, [id]: e.target.checked }))
+                        }
+                      />
+                      <span style={{ fontSize: 11, color: '#f87171' }}>
+                        I have verified this user's identity via another channel
+                      </span>
+                    </label>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

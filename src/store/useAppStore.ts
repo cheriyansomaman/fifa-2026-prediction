@@ -7,6 +7,7 @@ import type {
   AppState,
   Fixture,
   Modal,
+  PasswordRequest,
   Prediction,
   Result,
   Tab,
@@ -68,14 +69,19 @@ type Actions = {
   setConfirmPwVal: (v: string) => void;
   setUsers: (users: Record<string, string>) => void;
   setResults: (results: Record<number, Result>) => void;
+  setWaVal: (v: string) => void;
+  setWaCodeVal: (v: string) => void;
   setPreds: (preds: Record<string, Record<number, Prediction>>) => void;
   login: () => Promise<void>;
   logout: () => void;
   changePassword: () => Promise<void>;
   predict: (fixture: Fixture, pred: Prediction) => Promise<void>;
   enterResult: (fixture: Fixture, res: Result) => Promise<void>;
-  generateTempForUser: (uid: string) => Promise<void>;
+  generateTempForUser: (uid: string, opts?: { requestId?: string; whatsapp?: string; countryCode?: string }) => Promise<void>;
   dismissTempPw: () => void;
+  setPwRequests: (requests: Record<string, PasswordRequest>) => void;
+  submitPwRequest: (name: string, countryCode: string, whatsapp: string) => Promise<void>;
+  dismissPwRequest: (requestId: string) => Promise<void>;
 };
 
 type StoreState = AppState & Actions;
@@ -105,6 +111,9 @@ export const useAppStore = create<StoreState>((set, get) => ({
   confirmPwVal: '',
   changeError: '',
   tempPwDisplay: null,
+  pwRequests: {},
+  waVal: '',
+  waCodeVal: '+44',
 
   // ── Simple setters ───────────────────────────────────────────────────────
   setTab: (tab) => set({ tab }),
@@ -116,12 +125,15 @@ export const useAppStore = create<StoreState>((set, get) => ({
   setConfirmPwVal: (confirmPwVal) => set({ confirmPwVal }),
   setUsers: (users) => set({ users }),
   setResults: (results) => set({ results, ko: buildKO(results) }),
+  setWaVal: (waVal) => set({ waVal }),
+  setWaCodeVal: (waCodeVal) => set({ waCodeVal }),
   setPreds: (preds) => set({ preds }),
   dismissTempPw: () => set({ tempPwDisplay: null }),
+  setPwRequests: (pwRequests) => set({ pwRequests }),
 
   // ── Auth ─────────────────────────────────────────────────────────────────
   login: async () => {
-    const { nameVal, pwVal } = get();
+    const { nameVal, pwVal, waVal, waCodeVal } = get();
     const name = nameVal.trim();
     const pw = pwVal.trim();
 
@@ -173,11 +185,13 @@ export const useAppStore = create<StoreState>((set, get) => ({
       } else {
         // New user — register
         const hashed = await bcrypt.hash(pw, 10);
-        await withTimeout(setDoc(doc(db, 'users', uid), { name, hashed, created: Date.now() }), 10000);
+        const docData: Record<string, unknown> = { name, hashed, created: Date.now() };
+        if (waVal.trim()) { docData.whatsapp = waVal.trim(); docData.countryCode = waCodeVal; }
+        await withTimeout(setDoc(doc(db, 'users', uid), docData), 10000);
         saveSession(uid, false);
         set({
           uid, isAdmin: false, saving: false, pwVal: '', nameVal: '',
-          loginError: '', mustChangePassword: false,
+          waVal: '', waCodeVal: '+44', loginError: '', mustChangePassword: false,
         });
       }
     } catch (err: unknown) {
@@ -247,11 +261,65 @@ export const useAppStore = create<StoreState>((set, get) => ({
   },
 
   // ── Admin ────────────────────────────────────────────────────────────────
-  generateTempForUser: async (targetUid) => {
+  generateTempForUser: async (targetUid, opts) => {
     const pw = genTempPw();
     const tempHashed = await bcrypt.hash(pw, 10);
     await updateDoc(doc(db, 'users', targetUid), { tempHashed });
-    const tempPwDisplay: TempPwDisplay = { uid: targetUid, pw };
+    if (opts?.requestId) {
+      await import('firebase/firestore').then(({ deleteDoc }) =>
+        deleteDoc(doc(db, 'passwordRequests', opts.requestId!))
+      );
+    }
+    const tempPwDisplay: TempPwDisplay = {
+      uid: targetUid,
+      pw,
+      whatsapp: opts?.whatsapp,
+      countryCode: opts?.countryCode,
+    };
     set({ tempPwDisplay });
+  },
+
+  submitPwRequest: async (name, countryCode, whatsapp) => {
+    const uid = name.toLowerCase().replace(/\s+/g, '_');
+    let verified = false;
+    try {
+      const userSnap = await withTimeout(getDoc(doc(db, 'users', uid)), 10000);
+      if (!userSnap.exists()) {
+        throw new Error('Username not found. Check your username and try again.');
+      }
+      const userData = userSnap.data() as { whatsapp?: string; countryCode?: string };
+      if (userData.whatsapp && userData.countryCode) {
+        verified =
+          userData.whatsapp.replace(/\D/g, '') === whatsapp.replace(/\D/g, '') &&
+          userData.countryCode === countryCode;
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('Username not found')) throw err;
+    }
+    const request: PasswordRequest = { uid, name, countryCode, whatsapp, requestedAt: Date.now(), verified };
+    await fsSet(`passwordRequests/${uid}`, request as unknown as Record<string, unknown>);
+
+    const tgToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
+    const tgChat = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID;
+    if (tgToken && tgChat) {
+      fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: tgChat,
+          text: `🔐 FIFA 2026 — Password Request\n\nUser: ${name}\nWhatsApp: ${countryCode} ${whatsapp}\nStatus: ${verified ? '✓ Verified' : '⚠ Unverified'}`,
+        }),
+      }).catch(() => {});
+    }
+  },
+
+  dismissPwRequest: async (requestId) => {
+    const { deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(doc(db, 'passwordRequests', requestId));
+    set((s) => {
+      const updated = { ...s.pwRequests };
+      delete updated[requestId];
+      return { pwRequests: updated };
+    });
   },
 }));

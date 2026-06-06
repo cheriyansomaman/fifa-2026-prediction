@@ -1,7 +1,7 @@
 import { collection, onSnapshot } from 'firebase/firestore';
 import { useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import type { Prediction } from '../types';
+import type { PasswordRequest, Prediction } from '../types';
 import { useAppStore } from '../store/useAppStore';
 
 type Unsub = () => void;
@@ -12,14 +12,17 @@ export function useLazySync(): void {
 
   const unsubUsersRef = useRef<Unsub | null>(null);
   const unsubAllPredsRef = useRef<Unsub | null>(null);
+  const unsubPwRequestsRef = useRef<Unsub | null>(null);
 
   useEffect(() => {
     if (!uid) {
       unsubUsersRef.current?.();
       unsubAllPredsRef.current?.();
+      unsubPwRequestsRef.current?.();
       unsubUsersRef.current = null;
       unsubAllPredsRef.current = null;
-      useAppStore.setState({ allPredsLoading: false });
+      unsubPwRequestsRef.current = null;
+      useAppStore.setState({ allPredsLoading: false, pwRequests: {} });
     }
   }, [uid]);
 
@@ -40,6 +43,18 @@ export function useLazySync(): void {
           useAppStore.getState().setUsers(users);
         },
         (err) => console.error('[sync] users:', err.message),
+      );
+    }
+
+    if (tab === 'users' && !unsubPwRequestsRef.current) {
+      unsubPwRequestsRef.current = onSnapshot(
+        collection(db, 'passwordRequests'),
+        (snap) => {
+          const pwRequests: Record<string, PasswordRequest> = {};
+          snap.forEach((d) => { pwRequests[d.id] = d.data() as PasswordRequest; });
+          useAppStore.getState().setPwRequests(pwRequests);
+        },
+        (err) => console.error('[sync] pw-requests:', err.message),
       );
     }
 
