@@ -2,7 +2,7 @@
 
 A real-time prediction league web app for FIFA World Cup 2026. Compete with friends by predicting match scores across all 104 matches — group stage through the final.
 
-🔗 **Live App:** [https://cheriyansomaman.github.io/fifa-2026-prediction/](https://cheriyansomaman.github.io/fifa-2026-prediction/)
+🔗 **Live App:** [https://myfifa26.netlify.app](https://myfifa26.netlify.app)
 
 ---
 
@@ -61,7 +61,7 @@ KO stage: penalty shootout winner prediction awards **+1 bonus pt**.
 
 ## How to Play
 
-1. Open the [live app](https://cheriyansomaman.github.io/fifa-2026-prediction/)
+1. Open the [live app](https://myfifa26.netlify.app)
 2. Enter a username and password → account created automatically on first login
 3. Go to **Fixtures** tab → click **⚽ Predict** on any open match
 4. Predictions lock **1 hour before kickoff**
