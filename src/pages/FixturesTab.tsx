@@ -12,16 +12,30 @@ export function FixturesTab() {
   const { ko, results, grpTab, setGrpTab } = useAppStore();
   const [hoverPill, setHoverPill] = useState<string | null>(null);
   const [matchFilter, setMatchFilter] = useState<MatchFilter>('upcoming');
+  const [teamFilter, setTeamFilter] = useState('');
 
   const allFixtures = [...GF, ...ko];
   const groupFiltered = grpTab === 'All'
     ? allFixtures
     : GF.filter((f) => f.group === grpTab);
-  const filteredFixtures = groupFiltered.filter((f) =>
+
+  const statusFiltered = groupFiltered.filter((f) =>
     matchFilter === 'finished'
       ? results[f.id]?.homeGoals !== undefined
       : results[f.id]?.homeGoals === undefined
   );
+
+  const teamFiltered = teamFilter.trim()
+    ? statusFiltered.filter((f) => {
+        const q = teamFilter.toLowerCase();
+        return f.home.toLowerCase().includes(q) || f.away.toLowerCase().includes(q);
+      })
+    : statusFiltered;
+
+  const filteredFixtures = [...teamFiltered].sort((a, b) => {
+    const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+    return matchFilter === 'finished' ? -diff : diff;
+  });
 
   return (
     <div>
@@ -85,6 +99,29 @@ export function FixturesTab() {
         ))}
       </div>
 
+      {/* Team filter */}
+      <div style={{ marginBottom: 20 }}>
+        <input
+          type="text"
+          placeholder="Filter by team..."
+          value={teamFilter}
+          onChange={(e) => setTeamFilter(e.target.value)}
+          style={{
+            background: '#0f172a',
+            border: '1.5px solid #1e293b',
+            borderRadius: 8,
+            color: '#e2e8f0',
+            fontSize: 13,
+            padding: '8px 14px',
+            outline: 'none',
+            width: '100%',
+            maxWidth: 280,
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
       <div className="fixtures-cols">
         {/* Match list */}
         <div>
@@ -94,6 +131,7 @@ export function FixturesTab() {
           {filteredFixtures.length === 0 && (
             <div style={{ color: '#475569', textAlign: 'center', padding: 40, fontSize: 14 }}>
               No {matchFilter} matches{grpTab !== 'All' ? ` in Group ${grpTab}` : ''}
+              {teamFilter.trim() ? ` matching "${teamFilter.trim()}"` : ''}
             </div>
           )}
         </div>
