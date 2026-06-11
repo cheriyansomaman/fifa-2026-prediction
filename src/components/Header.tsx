@@ -87,7 +87,7 @@ export function Header() {
                   fontFamily: "'Barlow', sans-serif",
                 }}
               >
-                1st Prize ₹1000
+                Prize ₹1000
               </span>
             </div>
             <div
