@@ -57,18 +57,38 @@ export function Header() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <img src={logoUrl} alt="WC 2026" style={{ height: 44, width: 'auto' }} />
           <div>
-            <div
-              style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontWeight: 900,
-                fontSize: 18,
-                color: '#f1f5f9',
-                textTransform: 'uppercase',
-                letterSpacing: 3,
-                lineHeight: 1,
-              }}
-            >
-              WC 2026
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 900,
+                  fontSize: 18,
+                  color: '#f1f5f9',
+                  textTransform: 'uppercase',
+                  letterSpacing: 3,
+                  lineHeight: 1,
+                }}
+              >
+                WC 2026
+              </div>
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                  color: '#1a1000',
+                  fontSize: 9,
+                  fontWeight: 800,
+                  padding: '2px 7px',
+                  borderRadius: 20,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.5,
+                  boxShadow: '0 1px 6px rgba(255,180,0,0.45)',
+                  fontFamily: "'Barlow', sans-serif",
+                }}
+              >
+                1st Prize ₹1000
+              </span>
             </div>
             <div
               style={{
