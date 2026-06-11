@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { deleteField, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, deleteField, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 import { create } from 'zustand';
 import { buildKO } from '../data/logic';
 import { db, fsSet } from '../firebase';
@@ -83,6 +83,7 @@ type Actions = {
   setPwRequests: (requests: Record<string, PasswordRequest>) => void;
   submitPwRequest: (name: string, countryCode: string, whatsapp: string) => Promise<void>;
   dismissPwRequest: (requestId: string) => Promise<void>;
+  refreshLeaderboard: () => Promise<void>;
 };
 
 type StoreState = AppState & Actions;
@@ -342,5 +343,19 @@ export const useAppStore = create<StoreState>((set, get) => ({
       delete updated[requestId];
       return { pwRequests: updated };
     });
+  },
+
+  refreshLeaderboard: async () => {
+    if (!get().uid) return;
+    set({ allPredsLoading: true });
+    try {
+      const snap = await getDocs(collection(db, 'predictions'));
+      const preds: Record<string, Record<number, Prediction>> = {};
+      snap.forEach((d) => { preds[d.id] = d.data() as Record<number, Prediction>; });
+      set({ preds, allPredsLoading: false });
+    } catch (err) {
+      console.error('[refresh] leaderboard:', err);
+      set({ allPredsLoading: false });
+    }
   },
 }));

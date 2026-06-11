@@ -15,7 +15,7 @@ function getRankStyle(rank: number) {
 }
 
 export function LeaderboardTab() {
-  const { users, preds, results, ko, setModal, allPredsLoading } = useAppStore();
+  const { users, preds, results, ko, setModal, allPredsLoading, refreshLeaderboard } = useAppStore();
   const allFixtures = [...GF, ...ko];
 
   const scores = Object.entries(users).map(([uid, name]) => {
@@ -48,24 +48,48 @@ export function LeaderboardTab() {
         >
           Leaderboard
         </h2>
-        <button
-          onClick={() => setModal({ type: 'rules' })}
-          style={{
-            background: 'transparent',
-            border: '1.5px solid #16a34a55',
-            color: '#4ade80',
-            borderRadius: 8,
-            padding: '6px 14px',
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: 'pointer',
-            textTransform: 'uppercase',
-            letterSpacing: 1,
-          }}
-          type="button"
-        >
-          Scoring Rules
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => refreshLeaderboard()}
+            disabled={allPredsLoading}
+            style={{
+              background: 'transparent',
+              border: '1.5px solid #1e3a5f',
+              color: allPredsLoading ? '#475569' : '#94a3b8',
+              borderRadius: 8,
+              padding: '6px 12px',
+              fontSize: 16,
+              cursor: allPredsLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              lineHeight: 1,
+            }}
+            type="button"
+            title="Refresh scores"
+          >
+            <span style={{ display: 'inline-block', animation: allPredsLoading ? 'spin 1s linear infinite' : 'none' }}>
+              ↻
+            </span>
+          </button>
+          <button
+            onClick={() => setModal({ type: 'rules' })}
+            style={{
+              background: 'transparent',
+              border: '1.5px solid #16a34a55',
+              color: '#4ade80',
+              borderRadius: 8,
+              padding: '6px 14px',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+            }}
+            type="button"
+          >
+            Scoring Rules
+          </button>
+        </div>
       </div>
 
       <div className="lb-grid">
