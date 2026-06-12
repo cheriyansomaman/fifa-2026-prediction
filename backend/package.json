@@ -1,0 +1,16 @@
+{
+  "name": "fifa-2026-live-score-sync",
+  "version": "1.0.0",
+  "description": "Live score poller for FIFA 2026 — writes to Firebase every 30s",
+  "private": true,
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.2.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.5"
+  }
+}

@@ -3,6 +3,7 @@ node_modules/
 
 # Environment
 .env
+*firebase-adminsdk*.json
 .env.prod
 .env.local
 .env.*.local

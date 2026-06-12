@@ -8,7 +8,8 @@ interface MatchCardProps {
   fixture: Fixture;
 }
 
-function getBorderColor(hasRes: boolean, hasPred: boolean, isTBC: boolean, open: boolean): string {
+function getBorderColor(isLive: boolean, hasRes: boolean, hasPred: boolean, isTBC: boolean, open: boolean): string {
+  if (isLive) return '#f97316';
   if (hasRes) return '#00C460';
   if (hasPred) return '#1d4ed8';
   if (isTBC) return '#1e293b';
@@ -16,7 +17,8 @@ function getBorderColor(hasRes: boolean, hasPred: boolean, isTBC: boolean, open:
   return '#7f1d1d';
 }
 
-function getBgColor(hasRes: boolean, hasPred: boolean, isTBC: boolean, open: boolean): string {
+function getBgColor(isLive: boolean, hasRes: boolean, hasPred: boolean, isTBC: boolean, open: boolean): string {
+  if (isLive) return '#1a0d00';
   if (hasRes) return '#0E1C14';
   if (hasPred) return '#111840';
   if (isTBC) return '#181F3C';
@@ -32,21 +34,61 @@ export function MatchCard({ fixture }: MatchCardProps) {
   const res = results[fixture.id];
   const myPred = uid ? preds[uid]?.[fixture.id] : undefined;
 
-  const hasRes = res !== undefined && res !== null && (res.homeGoals !== undefined);
-  const hasPred = myPred !== undefined && myPred !== null && (myPred.homeGoals !== undefined);
+  const matchStatus = res?.matchStatus;
+  const isLive = matchStatus === 'IN_PLAY' || matchStatus === 'PAUSED';
+  const isFinished = matchStatus === 'FINISHED' || matchStatus === 'AWARDED';
+  const hasRes = res !== undefined && res !== null && res.homeGoals !== undefined;
+  const hasPred = myPred !== undefined && myPred !== null && myPred.homeGoals !== undefined;
   const isTBC = fixture.home === 'TBD' || fixture.away === 'TBD';
   const open = predOpen(fixture.date);
 
-  const borderColor = getBorderColor(hasRes, hasPred, isTBC, open);
-  const bgColor = getBgColor(hasRes, hasPred, isTBC, open);
+  const borderColor = getBorderColor(isLive, hasRes, hasPred, isTBC, open);
+  const bgColor = getBgColor(isLive, hasRes, hasPred, isTBC, open);
 
   const pts = hasRes && hasPred ? calcPts(myPred, res, fixture) : null;
 
-  const scoreDisplay = hasRes
-    ? `${res.homeGoals} – ${res.awayGoals}`
+  const hasScore = res?.homeGoals !== undefined && res?.awayGoals !== undefined;
+  const scoreDisplay = hasScore
+    ? `${res!.homeGoals} – ${res!.awayGoals}`
     : 'VS';
 
-  const statusBadge = isTBC || hasRes ? null : open ? (
+  const statusBadge = isTBC ? null : isLive ? (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        color: '#fb923c',
+        background: '#1c0900',
+        border: '1px solid #f9731644',
+        borderRadius: 4,
+        padding: '2px 7px',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+      }}
+    >
+      <span className="pulse" style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#f97316' }} />
+      LIVE
+    </span>
+  ) : isFinished ? (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        color: '#3DFFA3',
+        background: '#031810',
+        border: '1px solid #00C46040',
+        borderRadius: 4,
+        padding: '2px 7px',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+      }}
+    >
+      FINISHED
+    </span>
+  ) : hasRes ? null : open ? (
     <span
       style={{
         fontSize: 10,
@@ -152,16 +194,16 @@ export function MatchCard({ fixture }: MatchCardProps) {
         <div style={{ textAlign: 'center', minWidth: 60 }}>
           <div
             style={{
-              fontSize: hasRes ? 26 : 16,
+              fontSize: hasScore ? 26 : 16,
               fontWeight: 800,
-              color: hasRes ? '#3DFFA3' : '#475569',
+              color: isLive ? '#fb923c' : hasScore ? '#3DFFA3' : '#475569',
               fontFamily: "'Barlow Condensed', sans-serif",
-              letterSpacing: hasRes ? 2 : 1,
+              letterSpacing: hasScore ? 2 : 1,
             }}
           >
             {scoreDisplay}
           </div>
-          {hasRes && res.homePenGoals !== undefined && res.awayPenGoals !== undefined && (
+          {hasScore && res!.homePenGoals !== undefined && res!.awayPenGoals !== undefined && (
             <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
               ({res.homePenGoals} – {res.awayPenGoals} pens)
             </div>

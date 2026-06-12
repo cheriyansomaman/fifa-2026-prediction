@@ -14,6 +14,17 @@ export interface Fixture {
   label?: string;
 }
 
+export type MatchStatus =
+  | 'SCHEDULED'
+  | 'TIMED'
+  | 'IN_PLAY'
+  | 'PAUSED'
+  | 'FINISHED'
+  | 'SUSPENDED'
+  | 'POSTPONED'
+  | 'CANCELLED'
+  | 'AWARDED';
+
 export interface Prediction {
   homeGoals?: number;
   awayGoals?: number;
@@ -21,6 +32,7 @@ export interface Prediction {
   awayPenGoals?: number;
   winner?: string;
   penaltyWinner?: string;
+  matchStatus?: MatchStatus;
 }
 
 export type Result = Prediction;
