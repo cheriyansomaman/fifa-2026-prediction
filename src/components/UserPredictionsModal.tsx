@@ -1,6 +1,6 @@
 import { useAppStore } from '../store/useAppStore';
 import { GF } from '../data/constants';
-import { fmtDate, flag, calcPts } from '../data/logic';
+import { predOpen, fmtDate, flag, calcPts } from '../data/logic';
 import type { Fixture, Prediction } from '../types';
 
 interface Props {
@@ -140,7 +140,7 @@ export function UserPredictionsModal({ uid, name, onClose }: Props) {
   const predicted = allFixtures
     .filter((f) => {
       const p = userPreds[f.id];
-      return p !== undefined && p.homeGoals !== undefined;
+      return !predOpen(f.date) && p !== undefined && p.homeGoals !== undefined;
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -262,7 +262,7 @@ export function UserPredictionsModal({ uid, name, onClose }: Props) {
               padding: '40px 0',
             }}
           >
-            No predictions made yet.
+            No closed matches with predictions yet.
           </p>
         )}
 
