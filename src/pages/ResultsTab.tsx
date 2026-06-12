@@ -182,7 +182,7 @@ export function ResultsTab() {
         >
           Group Stage
         </h2>
-        {GF.map((f) => renderMatchRow(f))}
+        {[...GF].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
       </div>
 
       {/* Knockout Stage */}
@@ -203,7 +203,7 @@ export function ResultsTab() {
           >
             Knockout Stage
           </h2>
-          {ko.map((f) => renderMatchRow(f))}
+          {[...ko].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
         </div>
       )}
     </div>

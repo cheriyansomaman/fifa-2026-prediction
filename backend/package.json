@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "start": "tsx src/index.ts",
+    "start:prod": "DOTENV_CONFIG_PATH=.env.prod tsx src/index.ts",
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {

@@ -21,6 +21,7 @@ initFirebase();
 const db = getFirestore();
 
 const finalizedIds = new Set<number>();
+const lastKnownResults = new Map<number, string>();
 
 async function tick(): Promise<void> {
   try {
@@ -39,6 +40,8 @@ async function tick(): Promise<void> {
       return;
     }
 
+    console.log(`[${new Date().toISOString()}] Fetched: ${matches.map(m => `${m.homeTeam.name} vs ${m.awayTeam.name} [${m.status}]`).join(', ')}`);
+
     const fixtureIndex = buildFixtureIndex(currentResults);
     const updates: Record<string, unknown> = {};
 
@@ -49,7 +52,14 @@ async function tick(): Promise<void> {
         continue;
       }
       if (finalizedIds.has(id)) continue;
-      updates[String(id)] = toResult(m);
+
+      const result = toResult(m);
+      const serialized = JSON.stringify(result);
+      if (lastKnownResults.get(id) === serialized) continue;
+
+      updates[String(id)] = result;
+      lastKnownResults.set(id, serialized);
+
       if (m.status === 'FINISHED' || m.status === 'AWARDED') {
         finalizedIds.add(id);
       }
