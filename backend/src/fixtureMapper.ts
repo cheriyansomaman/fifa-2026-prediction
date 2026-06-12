@@ -7,16 +7,20 @@ export function buildFixtureIndex(results: Record<number, Result>): Map<string, 
   const index = new Map<string, number>();
 
   for (const f of GF) {
+    if (!f?.home || !f?.away) continue;
     const key = `${normalizeTeam(f.home)}|${normalizeTeam(f.away)}`;
     index.set(key, f.id);
   }
 
-  const koFixtures = buildKO(results);
-  for (const f of koFixtures) {
-    if (f.home !== 'TBC' && f.away !== 'TBC') {
+  try {
+    const koFixtures = buildKO(results);
+    for (const f of koFixtures) {
+      if (!f?.home || !f?.away || f.home === 'TBC' || f.away === 'TBC') continue;
       const key = `${normalizeTeam(f.home)}|${normalizeTeam(f.away)}`;
       index.set(key, f.id);
     }
+  } catch (e) {
+    console.warn('buildKO failed, using group fixtures only:', e instanceof Error ? e.message : e);
   }
 
   return index;

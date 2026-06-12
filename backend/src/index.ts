@@ -20,6 +20,8 @@ function initFirebase(): void {
 initFirebase();
 const db = getFirestore();
 
+const finalizedIds = new Set<number>();
+
 async function tick(): Promise<void> {
   try {
     const resultsSnap = await db.doc('app/results').get();
@@ -46,7 +48,11 @@ async function tick(): Promise<void> {
         console.warn(`Unmatched: ${m.homeTeam.name} vs ${m.awayTeam.name} (${m.utcDate})`);
         continue;
       }
+      if (finalizedIds.has(id)) continue;
       updates[String(id)] = toResult(m);
+      if (m.status === 'FINISHED' || m.status === 'AWARDED') {
+        finalizedIds.add(id);
+      }
     }
 
     if (Object.keys(updates).length === 0) return;
@@ -54,7 +60,7 @@ async function tick(): Promise<void> {
     await db.doc('app/results').set(updates, { merge: true });
     console.log(`[${new Date().toISOString()}] Updated ${Object.keys(updates).length} fixture(s)`);
   } catch (err) {
-    console.error(`[${new Date().toISOString()}] Error:`, err instanceof Error ? err.message : err);
+    console.error(`[${new Date().toISOString()}] Error:`, err instanceof Error ? err.stack : err);
   }
 }
 

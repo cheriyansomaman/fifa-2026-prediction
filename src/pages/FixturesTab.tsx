@@ -19,11 +19,13 @@ export function FixturesTab() {
     ? allFixtures
     : GF.filter((f) => f.group === grpTab);
 
-  const statusFiltered = groupFiltered.filter((f) =>
-    matchFilter === 'finished'
-      ? results[f.id]?.homeGoals !== undefined
-      : results[f.id]?.homeGoals === undefined
-  );
+  const statusFiltered = groupFiltered.filter((f) => {
+    const res = results[f.id];
+    const hasScore = res?.homeGoals !== undefined;
+    const status = res?.matchStatus;
+    const isLive = status === 'IN_PLAY' || status === 'PAUSED';
+    return matchFilter === 'finished' ? hasScore && !isLive : !hasScore || isLive;
+  });
 
   const teamFiltered = teamFilter.trim()
     ? statusFiltered.filter((f) => {

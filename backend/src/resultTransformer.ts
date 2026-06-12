@@ -13,13 +13,15 @@ export function toResult(match: FdMatch): AppResult {
   if (score.fullTime.away !== null) result.awayGoals = score.fullTime.away;
 
   const hasPenalties =
-    score.penalties.home !== null && score.penalties.away !== null;
+    score.penalties != null &&
+    score.penalties.home !== null &&
+    score.penalties.away !== null;
 
   if (hasPenalties) {
-    result.homePenGoals = score.penalties.home!;
-    result.awayPenGoals = score.penalties.away!;
-    result.penaltyWinner =
-      score.penalties.home! > score.penalties.away! ? home : away;
+    const pens = score.penalties!;
+    result.homePenGoals = pens.home!;
+    result.awayPenGoals = pens.away!;
+    result.penaltyWinner = pens.home! > pens.away! ? home : away;
   }
 
   if (score.winner === 'HOME_TEAM') result.winner = home;
