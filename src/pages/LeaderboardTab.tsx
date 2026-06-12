@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { GF } from '../data/constants';
 import { calcPts } from '../data/logic';
+import { UserPredictionsModal } from '../components/UserPredictionsModal';
 
 const MEDALS: Record<number, string> = { 0: '🥇', 1: '🥈', 2: '🥉' };
 
@@ -16,6 +18,7 @@ function getRankStyle(rank: number) {
 
 export function LeaderboardTab() {
   const { users, preds, results, ko, setModal, allPredsLoading, refreshLeaderboard } = useAppStore();
+  const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const allFixtures = [...GF, ...ko];
 
   const scores = Object.entries(users).map(([uid, name]) => {
@@ -99,6 +102,7 @@ export function LeaderboardTab() {
             <div
               key={uid}
               className={shadow}
+              onClick={() => setSelectedUid(uid)}
               style={{
                 background: bg,
                 border: `1.5px solid ${border}55`,
@@ -108,6 +112,7 @@ export function LeaderboardTab() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 16,
+                cursor: 'pointer',
               }}
             >
               {/* Rank */}
@@ -171,6 +176,14 @@ export function LeaderboardTab() {
         <div style={{ textAlign: 'center', padding: '60px 20px', color: '#475569', fontSize: 14 }}>
           No players yet
         </div>
+      )}
+
+      {selectedUid && (
+        <UserPredictionsModal
+          uid={selectedUid}
+          name={users[selectedUid] ?? selectedUid}
+          onClose={() => setSelectedUid(null)}
+        />
       )}
     </div>
   );

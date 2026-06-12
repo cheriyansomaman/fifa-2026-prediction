@@ -9,6 +9,10 @@ export function predOpen(kickoff: string): boolean {
   return Date.now() < new Date(kickoff).getTime();
 }
 
+export function predViewable(kickoff: string): boolean {
+  return Date.now() >= new Date(kickoff).getTime() - 3_600_000;
+}
+
 export function fmtDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     month: 'short',
