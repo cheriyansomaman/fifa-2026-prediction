@@ -35,6 +35,12 @@ export function LeaderboardTab() {
   scores.sort((a, b) => b.pts - a.pts);
   const top20 = scores.slice(0, 20);
 
+  let rankCursor = 0;
+  const ranked = top20.map((entry, i) => {
+    if (i > 0 && top20[i - 1].pts !== entry.pts) rankCursor = i;
+    return { ...entry, rank: rankCursor };
+  });
+
   return (
     <div>
       {/* Header row with rules button */}
@@ -96,8 +102,8 @@ export function LeaderboardTab() {
       </div>
 
       <div className="lb-grid">
-        {top20.map(({ uid, name, pts }, i) => {
-          const { border, bg, shadow } = getRankStyle(i);
+        {ranked.map(({ uid, name, pts, rank }) => {
+          const { border, bg, shadow } = getRankStyle(rank);
           return (
             <div
               key={uid}
@@ -118,15 +124,15 @@ export function LeaderboardTab() {
               {/* Rank */}
               <div
                 style={{
-                  fontSize: i < 3 ? 28 : 18,
+                  fontSize: rank < 3 ? 28 : 18,
                   fontWeight: 900,
-                  color: i < 3 ? border : '#475569',
+                  color: rank < 3 ? border : '#475569',
                   fontFamily: "'Barlow Condensed', sans-serif",
                   minWidth: 36,
                   textAlign: 'center',
                 }}
               >
-                {MEDALS[i] ?? i + 1}
+                {MEDALS[rank] ?? rank + 1}
               </div>
 
               {/* Name */}
@@ -151,7 +157,7 @@ export function LeaderboardTab() {
                   style={{
                     fontSize: 24,
                     fontWeight: 900,
-                    color: i === 0 ? '#fbbf24' : i === 1 ? '#94a3b8' : i === 2 ? '#b87333' : '#4ade80',
+                    color: rank === 0 ? '#fbbf24' : rank === 1 ? '#94a3b8' : rank === 2 ? '#b87333' : '#4ade80',
                     fontFamily: "'Barlow Condensed', sans-serif",
                     lineHeight: 1,
                   }}
