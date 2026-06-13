@@ -204,7 +204,7 @@ function buildGroupFixtures(): Fixture[] {
     { group: 'K', home: 'Colombia', away: 'Congo DR', date: '2026-06-23T02:00:00Z', venue: 'Guadalajara' },
     { group: 'K', home: 'Portugal', away: 'Colombia', date: '2026-06-27T21:00:00Z', venue: 'Kansas City' },
     { group: 'K', home: 'Congo DR', away: 'Uzbekistan', date: '2026-06-27T21:00:00Z', venue: 'Dallas' },
-    { group: 'L', home: 'England', away: 'Croatia', date: '2026-06-13T20:00:00Z', venue: 'New York/NJ' },
+    { group: 'L', home: 'England', away: 'Croatia', date: '2026-06-17T20:00:00Z', venue: 'Dallas' },
     { group: 'L', home: 'Ghana', away: 'Panama', date: '2026-06-13T23:00:00Z', venue: 'Toronto' },
     { group: 'L', home: 'England', away: 'Ghana', date: '2026-06-20T20:00:00Z', venue: 'Boston' },
     { group: 'L', home: 'Panama', away: 'Croatia', date: '2026-06-20T23:00:00Z', venue: 'Toronto' },
