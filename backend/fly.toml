@@ -1,0 +1,19 @@
+# fly.toml app configuration file generated for fifa-2026-live-sync on 2026-06-12T21:09:42+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'fifa-2026-live-sync'
+primary_region = 'lhr'
+
+[build]
+  dockerfile = '../Dockerfile'
+
+[env]
+  NODE_ENV = 'production'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256

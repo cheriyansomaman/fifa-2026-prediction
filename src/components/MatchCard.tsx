@@ -8,6 +8,29 @@ interface MatchCardProps {
   fixture: Fixture;
 }
 
+const SPARKS = [
+  { tx: '-22px', ty: '-18px', color: '#f97316', delay: '0ms' },
+  { tx: '0px',   ty: '-26px', color: '#fbbf24', delay: '80ms' },
+  { tx: '22px',  ty: '-18px', color: '#00C460', delay: '160ms' },
+  { tx: '-20px', ty: '18px',  color: '#f472b6', delay: '40ms' },
+  { tx: '20px',  ty: '18px',  color: '#22d3ee', delay: '120ms' },
+  { tx: '0px',   ty: '26px',  color: '#ef4444', delay: '200ms' },
+];
+
+function WinnerSparks() {
+  return (
+    <>
+      {SPARKS.map((s, i) => (
+        <span
+          key={i}
+          className="spark-particle"
+          style={{ '--tx': s.tx, '--ty': s.ty, background: s.color, animationDelay: s.delay } as React.CSSProperties}
+        />
+      ))}
+    </>
+  );
+}
+
 function getBorderColor(isLive: boolean, hasRes: boolean, hasPred: boolean, isTBC: boolean, open: boolean): string {
   if (isLive) return '#f97316';
   if (hasRes) return '#00C460';
@@ -38,6 +61,8 @@ export function MatchCard({ fixture }: MatchCardProps) {
   const isLive = matchStatus === 'IN_PLAY' || matchStatus === 'PAUSED';
   const isFinished = matchStatus === 'FINISHED' || matchStatus === 'AWARDED';
   const hasRes = res !== undefined && res !== null && res.homeGoals !== undefined;
+  const isHomeWinner = isFinished && res?.winner === fixture.home;
+  const isAwayWinner = isFinished && res?.winner === fixture.away;
   const hasPred = myPred !== undefined && myPred !== null && myPred.homeGoals !== undefined;
   const isTBC = fixture.home === 'TBD' || fixture.away === 'TBD';
   const open = predOpen(fixture.date);
@@ -185,8 +210,9 @@ export function MatchCard({ fixture }: MatchCardProps) {
         {/* Home team */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
           <FlagImg name={fixture.home} size={36} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
+          <span style={{ position: 'relative', display: 'inline-block', fontSize: 13, fontWeight: 700, color: isHomeWinner ? '#3DFFA3' : '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
             {fixture.home}
+            {isHomeWinner && <WinnerSparks />}
           </span>
         </div>
 
@@ -213,8 +239,9 @@ export function MatchCard({ fixture }: MatchCardProps) {
         {/* Away team */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
           <FlagImg name={fixture.away} size={36} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
+          <span style={{ position: 'relative', display: 'inline-block', fontSize: 13, fontWeight: 700, color: isAwayWinner ? '#3DFFA3' : '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
             {fixture.away}
+            {isAwayWinner && <WinnerSparks />}
           </span>
         </div>
       </div>
