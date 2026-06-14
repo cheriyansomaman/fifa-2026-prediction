@@ -1,0 +1,34 @@
+name: Live Score Sync
+
+on:
+  schedule:
+    # Runs every 5 minutes — the backend polls for 5 minutes then exits,
+    # giving continuous 30-second coverage with a tiny overlap between runs.
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run live score sync
+        working-directory: backend
+        run: npm start
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          MAX_RUN_SECONDS: '300'
