@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { initializeApp, applicationDefault, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import type { Result } from '../../src/types';
-import { fetchLiveMatches, fetchTodayFinished } from './apiClient';
+import { fetchLiveMatches, fetchRecentFinished } from './apiClient';
 import { buildFixtureIndex, resolveFixtureId } from './fixtureMapper';
 import { toResult } from './resultTransformer';
 
@@ -30,10 +30,16 @@ async function tick(): Promise<void> {
 
     const [live, finished] = await Promise.all([
       fetchLiveMatches(),
-      fetchTodayFinished(),
+      fetchRecentFinished(),
     ]);
 
-    const matches = [...live, ...finished];
+    // Deduplicate by match ID — a match can appear in both calls (e.g. just finished)
+    const seen = new Set<number>();
+    const matches = [...live, ...finished].filter(m => {
+      if (seen.has(m.id)) return false;
+      seen.add(m.id);
+      return true;
+    });
 
     if (matches.length === 0) {
       console.log(`[${new Date().toISOString()}] No active matches`);
