@@ -46,7 +46,9 @@ async function tick(): Promise<void> {
       return;
     }
 
-    console.log(`[${new Date().toISOString()}] Fetched: ${matches.map(m => `${m.homeTeam.name} vs ${m.awayTeam.name} [${m.status}]`).join(', ')}`);
+    const ts = () => new Date().toISOString();
+
+    console.log(`[${ts()}] Fetched ${matches.length} match(es): ${matches.map(m => `${m.homeTeam.name} vs ${m.awayTeam.name} [${m.status}]`).join(', ')}`);
 
     const fixtureIndex = buildFixtureIndex(currentResults);
     const updates: Record<string, unknown> = {};
@@ -54,14 +56,24 @@ async function tick(): Promise<void> {
     for (const m of matches) {
       const id = resolveFixtureId(m.homeTeam.name, m.awayTeam.name, fixtureIndex);
       if (id === null) {
-        console.warn(`Unmatched: ${m.homeTeam.name} vs ${m.awayTeam.name} (${m.utcDate})`);
+        console.warn(`[${ts()}] UNMATCHED: ${m.homeTeam.name} vs ${m.awayTeam.name} (${m.utcDate})`);
         continue;
       }
-      if (finalizedIds.has(id)) continue;
+      if (finalizedIds.has(id)) {
+        console.log(`[${ts()}] SKIP fixture #${id} (${m.homeTeam.name} vs ${m.awayTeam.name}) — already finalized`);
+        continue;
+      }
 
       const result = toResult(m);
       const serialized = JSON.stringify(result);
-      if (lastKnownResults.get(id) === serialized) continue;
+      const prev = lastKnownResults.get(id);
+
+      if (prev === serialized) {
+        console.log(`[${ts()}] SKIP fixture #${id} (${m.homeTeam.name} vs ${m.awayTeam.name}) — no change [${m.status}] score: ${result.homeGoals ?? '?'}-${result.awayGoals ?? '?'}`);
+        continue;
+      }
+
+      console.log(`[${ts()}] QUEUE fixture #${id} (${m.homeTeam.name} vs ${m.awayTeam.name}) [${m.status}] score: ${result.homeGoals ?? '?'}-${result.awayGoals ?? '?'} winner: ${result.winner ?? '-'} prev: ${prev ?? 'none'}`);
 
       updates[String(id)] = result;
       lastKnownResults.set(id, serialized);
@@ -71,10 +83,13 @@ async function tick(): Promise<void> {
       }
     }
 
-    if (Object.keys(updates).length === 0) return;
+    if (Object.keys(updates).length === 0) {
+      console.log(`[${ts()}] Nothing to write`);
+      return;
+    }
 
     await db.doc('app/results').set(updates, { merge: true });
-    console.log(`[${new Date().toISOString()}] Updated ${Object.keys(updates).length} fixture(s)`);
+    console.log(`[${ts()}] WROTE ${Object.keys(updates).length} fixture(s) to Firestore: ${Object.keys(updates).join(', ')}`);
   } catch (err) {
     console.error(`[${new Date().toISOString()}] Error:`, err instanceof Error ? err.stack : err);
   }
