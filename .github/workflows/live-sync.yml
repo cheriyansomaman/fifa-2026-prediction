@@ -2,22 +2,22 @@ name: Live Score Sync
 
 on:
   schedule:
-    # Runs every 5 minutes — the backend polls for 5 minutes then exits,
-    # giving continuous 30-second coverage with a tiny overlap between runs.
-    - cron: '*/5 * * * *'
+    # Runs every 10 minutes — the backend polls for 9 minutes then exits.
+    # GitHub throttles */5 crons heavily; every-10-min is far more reliable.
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 12
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
@@ -31,4 +31,4 @@ jobs:
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-          MAX_RUN_SECONDS: '300'
+          MAX_RUN_SECONDS: '540'
