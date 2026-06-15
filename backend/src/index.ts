@@ -74,6 +74,14 @@ async function tick(): Promise<void> {
   }
 }
 
+const maxRunMs = parseInt(process.env.MAX_RUN_SECONDS ?? '0') * 1000;
+if (maxRunMs > 0) {
+  setTimeout(() => {
+    console.log(`[${new Date().toISOString()}] Max run duration reached, exiting.`);
+    process.exit(0);
+  }, maxRunMs);
+}
+
 console.log(`Live score sync starting — polling every ${POLL_INTERVAL_MS / 1000}s`);
 tick();
 setInterval(tick, POLL_INTERVAL_MS);
