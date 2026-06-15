@@ -27,8 +27,8 @@ async function fetchMatches(query: string): Promise<FdMatch[]> {
 }
 
 export async function fetchLiveMatches(): Promise<FdMatch[]> {
-  // LIVE is the umbrella status covering IN_PLAY, PAUSED, extra time, and penalties
-  return fetchMatches('status=LIVE');
+  // Include EXTRA_TIME and PENALTY_SHOOTOUT so KO matches don't vanish mid-game
+  return fetchMatches('status=IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT');
 }
 
 export async function fetchRecentFinished(): Promise<FdMatch[]> {
@@ -40,5 +40,6 @@ export async function fetchRecentFinished(): Promise<FdMatch[]> {
   yesterday.setUTCDate(yesterday.getUTCDate() - 1);
   const dateTo = today.toISOString().slice(0, 10);
   const dateFrom = yesterday.toISOString().slice(0, 10);
-  return fetchMatches(`status=FINISHED&dateFrom=${dateFrom}&dateTo=${dateTo}`);
+  // AWARDED covers penalty-shootout winners and administrative results
+  return fetchMatches(`status=FINISHED,AWARDED&dateFrom=${dateFrom}&dateTo=${dateTo}`);
 }
