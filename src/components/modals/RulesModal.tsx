@@ -1,4 +1,5 @@
 import { useAppStore } from '../../store/useAppStore';
+import { ModalOverlay } from '../shared';
 
 interface RuleRow {
   outcome: string;
@@ -81,74 +82,42 @@ export function RulesModal() {
 
   if (!modal || modal.type !== 'rules') return null;
 
-  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) setModal(null);
-  };
-
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleBackdrop}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.75)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: 16,
-        overflowY: 'auto',
-      }}
-    >
-      <div
-        className="modal-box"
-        style={{
-          background: '#0a1628',
-          border: '1.5px solid #16a34a55',
-          borderRadius: 16,
-          padding: 28,
-          width: '100%',
-          maxWidth: 640,
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h3
-            style={{
-              fontSize: 18,
-              fontWeight: 800,
-              color: '#f1f5f9',
-              textTransform: 'uppercase',
-              letterSpacing: 2,
-              fontFamily: "'Barlow Condensed', sans-serif",
-            }}
-          >
-            Scoring Rules
-          </h3>
-          <button
-            onClick={() => setModal(null)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#64748b',
-              fontSize: 20,
-              cursor: 'pointer',
-              padding: '4px 8px',
-              borderRadius: 6,
-              lineHeight: 1,
-            }}
-            aria-label="Close rules"
-            type="button"
-          >
-            ✕
-          </button>
-        </div>
-
-        <RulesSection title="Group Stage" rows={GROUP_RULES} />
-        <RulesSection title="Knockout Stage" rows={KO_RULES} />
+    <ModalOverlay onClose={() => setModal(null)} borderColor="#16a34a" maxWidth={640} scrollable>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h3
+          style={{
+            fontSize: 18,
+            fontWeight: 800,
+            color: '#f1f5f9',
+            textTransform: 'uppercase',
+            letterSpacing: 2,
+            fontFamily: "'Barlow Condensed', sans-serif",
+          }}
+        >
+          Scoring Rules
+        </h3>
+        <button
+          onClick={() => setModal(null)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#64748b',
+            fontSize: 20,
+            cursor: 'pointer',
+            padding: '4px 8px',
+            borderRadius: 6,
+            lineHeight: 1,
+          }}
+          aria-label="Close rules"
+          type="button"
+        >
+          ✕
+        </button>
       </div>
-    </div>
+
+      <RulesSection title="Group Stage" rows={GROUP_RULES} />
+      <RulesSection title="Knockout Stage" rows={KO_RULES} />
+    </ModalOverlay>
   );
 }

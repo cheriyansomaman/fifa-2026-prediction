@@ -2,6 +2,7 @@ import { useAppStore } from '../store/useAppStore';
 import { GF } from '../data/constants';
 import { predOpen, fmtDate, flag, calcPts } from '../data/logic';
 import type { Fixture, Prediction } from '../types';
+import { ModalOverlay } from './shared';
 
 interface Props {
   uid: string;
@@ -147,10 +148,6 @@ export function UserPredictionsModal({ uid, name, onClose }: Props) {
   const groupFixtures = predicted.filter((f) => f.stage === 'group');
   const koFixtures = predicted.filter((f) => f.stage !== 'group');
 
-  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose();
-  };
-
   function buildRow(f: Fixture) {
     const pred = userPreds[f.id];
     const res = results[f.id];
@@ -172,114 +169,92 @@ export function UserPredictionsModal({ uid, name, onClose }: Props) {
   }
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleBackdrop}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.75)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: 16,
-        overflowY: 'auto',
-      }}
+    <ModalOverlay
+      onClose={onClose}
+      borderColor="#1e3a5f"
+      maxWidth={500}
+      scrollable
+      boxStyle={{ padding: 24 }}
     >
       <div
-        className="modal-box"
         style={{
-          background: '#0a1628',
-          border: '1.5px solid #1e3a5f',
-          borderRadius: 16,
-          padding: 24,
-          width: '100%',
-          maxWidth: 500,
-          maxHeight: '90vh',
-          overflowY: 'auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: 20,
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: 20,
-          }}
-        >
-          <div>
-            <h3
-              style={{
-                fontSize: 18,
-                fontWeight: 800,
-                color: '#f1f5f9',
-                textTransform: 'uppercase',
-                letterSpacing: 2,
-                fontFamily: "'Barlow Condensed', sans-serif",
-                margin: 0,
-              }}
-            >
-              {name}&apos;s Predictions
-            </h3>
-            <p
-              style={{
-                fontSize: 10,
-                color: '#475569',
-                margin: '4px 0 0',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
-            >
-              Latest first
-            </p>
-          </div>
-          <button
-            onClick={onClose}
+        <div>
+          <h3
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#64748b',
-              fontSize: 20,
-              cursor: 'pointer',
-              padding: '4px 8px',
-              borderRadius: 6,
-              lineHeight: 1,
+              fontSize: 18,
+              fontWeight: 800,
+              color: '#f1f5f9',
+              textTransform: 'uppercase',
+              letterSpacing: 2,
+              fontFamily: "'Barlow Condensed', sans-serif",
+              margin: 0,
             }}
-            aria-label="Close"
-            type="button"
           >
-            ✕
-          </button>
-        </div>
-
-        {predicted.length === 0 && (
+            {name}&apos;s Predictions
+          </h3>
           <p
             style={{
+              fontSize: 10,
               color: '#475569',
-              fontSize: 13,
-              textAlign: 'center',
-              padding: '40px 0',
+              margin: '4px 0 0',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
             }}
           >
-            No closed matches with predictions yet.
+            Latest first
           </p>
-        )}
-
-        {groupFixtures.length > 0 && (
-          <>
-            <SectionLabel label="Group Stage" color="#4ade80" />
-            {groupFixtures.map(buildRow)}
-          </>
-        )}
-
-        {koFixtures.length > 0 && (
-          <div style={{ marginTop: groupFixtures.length > 0 ? 16 : 0 }}>
-            <SectionLabel label="Knockout Stage" color="#f59e0b" />
-            {koFixtures.map(buildRow)}
-          </div>
-        )}
+        </div>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#64748b',
+            fontSize: 20,
+            cursor: 'pointer',
+            padding: '4px 8px',
+            borderRadius: 6,
+            lineHeight: 1,
+          }}
+          aria-label="Close"
+          type="button"
+        >
+          ✕
+        </button>
       </div>
-    </div>
+
+      {predicted.length === 0 && (
+        <p
+          style={{
+            color: '#475569',
+            fontSize: 13,
+            textAlign: 'center',
+            padding: '40px 0',
+          }}
+        >
+          No closed matches with predictions yet.
+        </p>
+      )}
+
+      {groupFixtures.length > 0 && (
+        <>
+          <SectionLabel label="Group Stage" color="#4ade80" />
+          {groupFixtures.map(buildRow)}
+        </>
+      )}
+
+      {koFixtures.length > 0 && (
+        <div style={{ marginTop: groupFixtures.length > 0 ? 16 : 0 }}>
+          <SectionLabel label="Knockout Stage" color="#f59e0b" />
+          {koFixtures.map(buildRow)}
+        </div>
+      )}
+    </ModalOverlay>
   );
 }
