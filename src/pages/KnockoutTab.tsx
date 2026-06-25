@@ -23,7 +23,8 @@ export function KnockoutTab() {
   const visibleRounds = KO_ROUNDS.map(({ stage, label }) => {
     const fixtures = ko
       .filter((f) => f.stage === stage)
-      .filter((f) => matchFilter === 'finished' ? isFinished(f.id) : !isFinished(f.id));
+      .filter((f) => matchFilter === 'finished' ? isFinished(f.id) : !isFinished(f.id))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     return { stage, label, fixtures };
   }).filter(({ fixtures }) => fixtures.length > 0);
 
