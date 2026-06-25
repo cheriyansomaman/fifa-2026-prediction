@@ -358,7 +358,8 @@ async function login(){
     set({loginError:"Name and password required"});
     return;
   }
-  const uid=name.toLowerCase().replace(/\s+/g,"_");
+  const uid=name.toLowerCase().replace(/\s+/g,"_").replace(/[.#$\/\[\]]/g,"");
+  if(!uid){ set({loginError:"Invalid username"}); return; }
   set({saving:true,loginError:""});
 
   try{
@@ -407,7 +408,7 @@ async function generateTempForUser(uid){
 async function changePassword(){
   const np=S.newPwVal.trim(), cp=S.confirmPwVal.trim();
   if(!np){ set({changeError:"Enter new password"}); return; }
-  if(np.length<6){ set({changeError:"Min 6 characters"}); return; }
+  if(np.length<8){ set({changeError:"Min 8 characters"}); return; }
   if(np!==cp){ set({changeError:"Passwords don't match"}); return; }
   set({saving:true,changeError:""});
   try{

@@ -146,7 +146,11 @@ export const useAppStore = create<StoreState>((set, get) => ({
       return;
     }
 
-    const uid = name.toLowerCase().replace(/\s+/g, '_');
+    const uid = name.toLowerCase().replace(/\s+/g, '_').replace(/[.#$\/\[\]]/g, '');
+    if (!uid) {
+      set({ loginError: 'Invalid username' });
+      return;
+    }
     set({ saving: true, loginError: '' });
 
     try {
@@ -192,11 +196,11 @@ export const useAppStore = create<StoreState>((set, get) => ({
           set({ saving: false, loginError: 'WhatsApp number required for new registration.' });
           return;
         }
-        const hashed = await bcrypt.hash(pw, 10);
         if (pw.length < 8) {
           set({ saving: false, loginError: 'Password must be at least 8 characters.' });
           return;
         }
+        const hashed = await bcrypt.hash(pw, 10);
         const docData: Record<string, unknown> = { name, hashed, created: Date.now() };
         if (waVal.trim()) { docData.whatsapp = waVal.trim(); docData.countryCode = waCodeVal; }
         delete docData.role;
@@ -328,7 +332,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
   },
 
   submitPwRequest: async (name, countryCode, whatsapp) => {
-    const uid = name.toLowerCase().replace(/\s+/g, '_');
+    const uid = name.toLowerCase().replace(/\s+/g, '_').replace(/[.#$\/\[\]]/g, '');
     let verified = false;
     try {
       const userSnap = await withTimeout(getDoc(doc(db, 'users', uid)), 10000);
@@ -347,20 +351,10 @@ export const useAppStore = create<StoreState>((set, get) => ({
     const request: PasswordRequest = { uid, name, countryCode, whatsapp, requestedAt: Date.now(), verified };
     await fsSet(`passwordRequests/${uid}`, request as unknown as Record<string, unknown>);
 
-    const tgToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-    const tgChat = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID;
-    if (tgToken && tgChat) {
-      fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: tgChat,
-          text: `🔐 FIFA 2026 — Password Request\n\nUser: ${name}\nWhatsApp: ${countryCode} ${whatsapp}\nStatus: ${verified ? '✓ Verified' : '⚠ Unverified'}`,
-        }),
-      }).catch((err: unknown) => {
-        console.warn('[telegram] Failed to send admin notification:', err instanceof Error ? err.message : err);
-      });
-    }
+    // Telegram admin notification is intentionally omitted from client-side code.
+    // Bot tokens must never be shipped in the browser bundle (the VITE_ prefix
+    // exposes env vars to every visitor). Move this to a server-side function
+    // (e.g. Netlify Function, Cloud Function) if Telegram notifications are needed.
   },
 
   dismissPwRequest: async (requestId) => {
