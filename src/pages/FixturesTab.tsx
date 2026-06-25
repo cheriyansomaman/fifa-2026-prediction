@@ -3,10 +3,10 @@ import { useAppStore } from '../store/useAppStore';
 import { GF, GROUPS } from '../data/constants';
 import { MatchCard } from '../components/MatchCard';
 import { StandingsTable } from '../components/StandingsTable';
+import { MatchFilterToggle } from '../components/shared';
+import type { MatchFilter } from '../components/shared';
 
 const ALL_GROUPS = ['All', ...Object.keys(GROUPS)];
-
-type MatchFilter = 'upcoming' | 'finished';
 
 export function FixturesTab() {
   const { ko, results, grpTab, setGrpTab } = useAppStore();
@@ -77,29 +77,7 @@ export function FixturesTab() {
       </div>
 
       {/* Upcoming / Finished toggle */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderRadius: 10, overflow: 'hidden', border: '1px solid #1e293b', width: 'fit-content' }}>
-        {(['upcoming', 'finished'] as MatchFilter[]).map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setMatchFilter(f)}
-            style={{
-              padding: '7px 20px',
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              border: 'none',
-              background: matchFilter === f ? '#00C460' : '#0f172a',
-              color: matchFilter === f ? '#fff' : '#64748b',
-              transition: 'background 150ms, color 150ms',
-            }}
-          >
-            {f === 'upcoming' ? 'Upcoming' : 'Finished'}
-          </button>
-        ))}
-      </div>
+      <MatchFilterToggle value={matchFilter} onChange={setMatchFilter} style={{ marginBottom: 20 }} />
 
       {/* Team filter */}
       <div style={{ marginBottom: 20 }}>

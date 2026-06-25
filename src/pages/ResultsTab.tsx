@@ -5,6 +5,7 @@ import { GF } from '../data/constants';
 import { fmtDate } from '../data/logic';
 import { Stepper } from '../components/Stepper';
 import { FlagImg } from '../components/FlagImg';
+import { SectionHeading } from '../components/shared';
 
 interface MatchScoreState {
   hg: number;
@@ -89,7 +90,7 @@ export function ResultsTab() {
               onChange={(v) => updateScore(fixture.id, 'hg', v)}
               size="sm"
             />
-            <span style={{ fontSize: 16, color: '#475569', fontWeight: 700 }}>–</span>
+            <span style={{ fontSize: 16, color: '#475569', fontWeight: 700 }}>&ndash;</span>
             <Stepper
               initialValue={score.ag}
               accent="#f59e0b"
@@ -149,7 +150,7 @@ export function ResultsTab() {
               onChange={(v) => updateScore(fixture.id, 'homePen', v)}
               size="sm"
             />
-            <span style={{ fontSize: 14, color: '#475569', fontWeight: 700 }}>–</span>
+            <span style={{ fontSize: 14, color: '#475569', fontWeight: 700 }}>&ndash;</span>
             <Stepper
               label={fixture.away}
               initialValue={score.awayPen}
@@ -167,42 +168,18 @@ export function ResultsTab() {
     <div>
       {/* Group Stage */}
       <div style={{ marginBottom: 36 }}>
-        <h2
-          style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 16,
-            fontWeight: 800,
-            color: '#f1f5f9',
-            textTransform: 'uppercase',
-            letterSpacing: 3,
-            marginBottom: 16,
-            borderLeft: '3px solid #f59e0b',
-            paddingLeft: 12,
-          }}
-        >
+        <SectionHeading accentColor="#f59e0b" style={{ marginBottom: 16 }}>
           Group Stage
-        </h2>
+        </SectionHeading>
         {[...GF].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
       </div>
 
       {/* Knockout Stage */}
       {ko.length > 0 && (
         <div>
-          <h2
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: 16,
-              fontWeight: 800,
-              color: '#f1f5f9',
-              textTransform: 'uppercase',
-              letterSpacing: 3,
-              marginBottom: 16,
-              borderLeft: '3px solid #f59e0b',
-              paddingLeft: 12,
-            }}
-          >
+          <SectionHeading accentColor="#f59e0b" style={{ marginBottom: 16 }}>
             Knockout Stage
-          </h2>
+          </SectionHeading>
           {[...ko].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
         </div>
       )}

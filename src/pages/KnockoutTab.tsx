@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { MatchCard } from '../components/MatchCard';
+import { MatchFilterToggle, SectionHeading, EmptyState } from '../components/shared';
+import type { MatchFilter } from '../components/shared';
 import type { Stage } from '../types';
 
 const KO_ROUNDS: { stage: Stage; label: string }[] = [
@@ -10,8 +12,6 @@ const KO_ROUNDS: { stage: Stage; label: string }[] = [
   { stage: 'sf', label: 'Semi-Finals' },
   { stage: 'final', label: 'Final' },
 ];
-
-type MatchFilter = 'upcoming' | 'finished';
 
 export function KnockoutTab() {
   const { ko, results } = useAppStore();
@@ -31,48 +31,12 @@ export function KnockoutTab() {
   return (
     <div>
       {hasAny && (
-        <div style={{ display: 'flex', gap: 0, marginBottom: 24, borderRadius: 10, overflow: 'hidden', border: '1px solid #1e293b', width: 'fit-content' }}>
-          {(['upcoming', 'finished'] as MatchFilter[]).map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setMatchFilter(f)}
-              style={{
-                padding: '7px 20px',
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: 'pointer',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                border: 'none',
-                background: matchFilter === f ? '#00C460' : '#0f172a',
-                color: matchFilter === f ? '#fff' : '#64748b',
-                transition: 'background 150ms, color 150ms',
-              }}
-            >
-              {f === 'upcoming' ? 'Upcoming' : 'Finished'}
-            </button>
-          ))}
-        </div>
+        <MatchFilterToggle value={matchFilter} onChange={setMatchFilter} style={{ marginBottom: 24 }} />
       )}
 
       {visibleRounds.map(({ stage, label, fixtures }) => (
         <div key={stage} style={{ marginBottom: 32 }}>
-          <h2
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: 16,
-              fontWeight: 800,
-              color: '#f1f5f9',
-              textTransform: 'uppercase',
-              letterSpacing: 3,
-              marginBottom: 14,
-              borderLeft: '3px solid #16a34a',
-              paddingLeft: 12,
-            }}
-          >
-            {label}
-          </h2>
+          <SectionHeading accentColor="#16a34a">{label}</SectionHeading>
           <div className="ko-grid">
             {fixtures.map((f) => (
               <MatchCard key={f.id} fixture={f} />
@@ -88,11 +52,11 @@ export function KnockoutTab() {
       )}
 
       {!hasAny && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#475569' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>⚽</div>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Knockout stage not yet generated</div>
-          <div style={{ fontSize: 13 }}>Results from the group stage will determine the bracket</div>
-        </div>
+        <EmptyState
+          icon="⚽"
+          message="Knockout stage not yet generated"
+          subtitle="Results from the group stage will determine the bracket"
+        />
       )}
     </div>
   );
