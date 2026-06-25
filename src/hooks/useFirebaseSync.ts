@@ -26,7 +26,7 @@ export function useFirebaseSync(): void {
       },
       (err) => {
         console.error('[sync] results:', err.message);
-        useAppStore.setState({ loading: false });
+        useAppStore.setState({ loading: false, syncError: `Results sync failed: ${err.message}` });
       },
     );
 
@@ -36,7 +36,10 @@ export function useFirebaseSync(): void {
         const pred = snap.exists() ? (snap.data() as Record<number, Prediction>) : {};
         useAppStore.setState((s) => ({ preds: { ...s.preds, [uid]: pred } }));
       },
-      (err) => console.error('[sync] own-preds:', err.message),
+      (err) => {
+        console.error('[sync] own-preds:', err.message);
+        useAppStore.setState({ syncError: `Predictions sync failed: ${err.message}` });
+      },
     );
 
     const unsubUser = onSnapshot(
@@ -49,7 +52,10 @@ export function useFirebaseSync(): void {
           users: label ? { ...s.users, [uid]: label } : s.users,
         }));
       },
-      (err) => console.error('[sync] user:', err.message),
+      (err) => {
+        console.error('[sync] user:', err.message);
+        useAppStore.setState({ syncError: `User sync failed: ${err.message}` });
+      },
     );
 
     return () => {

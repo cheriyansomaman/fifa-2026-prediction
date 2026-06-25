@@ -107,6 +107,8 @@ export const useAppStore = create<StoreState>((set, get) => ({
   allPredsLoading: false,
   saving: false,
   msg: '',
+  errorMsg: '',
+  syncError: '',
   loginError: '',
   mustChangePassword: false,
   newPwVal: '',
@@ -259,46 +261,70 @@ export const useAppStore = create<StoreState>((set, get) => ({
     if (!uid) return;
 
     set({ saving: true, modal: null });
-    await fsSet(`predictions/${uid}`, { [fixture.id]: pred });
-    set({ saving: false, msg: '✓ Prediction saved' });
-    setTimeout(() => set({ msg: '' }), 2500);
+    try {
+      await fsSet(`predictions/${uid}`, { [fixture.id]: pred });
+      set({ saving: false, msg: '✓ Prediction saved' });
+      setTimeout(() => set({ msg: '' }), 2500);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save prediction';
+      set({ saving: false, errorMsg: message });
+      setTimeout(() => set({ errorMsg: '' }), 4000);
+    }
   },
 
   enterResult: async (fixture, res) => {
     if (!get().isAdmin) return;
     set({ saving: true, modal: null });
-    await fsSet('app/results', { [fixture.id]: res });
-    set({ saving: false, msg: '✓ Result saved' });
-    setTimeout(() => set({ msg: '' }), 2500);
+    try {
+      await fsSet('app/results', { [fixture.id]: res });
+      set({ saving: false, msg: '✓ Result saved' });
+      setTimeout(() => set({ msg: '' }), 2500);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save result';
+      set({ saving: false, errorMsg: message });
+      setTimeout(() => set({ errorMsg: '' }), 4000);
+    }
   },
 
   updateDisplayName: async (displayName) => {
     const { uid } = get();
     if (!uid) return;
     const trimmed = displayName.trim().slice(0, 30);
-    await updateDoc(doc(db, 'users', uid), { displayName: trimmed || deleteField() });
-    if (trimmed) {
-      set((s) => ({ users: { ...s.users, [uid]: trimmed } }));
+    try {
+      await updateDoc(doc(db, 'users', uid), { displayName: trimmed || deleteField() });
+      if (trimmed) {
+        set((s) => ({ users: { ...s.users, [uid]: trimmed } }));
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update display name';
+      set({ errorMsg: message });
+      setTimeout(() => set({ errorMsg: '' }), 4000);
     }
   },
 
   // ── Admin ────────────────────────────────────────────────────────────────
   generateTempForUser: async (targetUid, opts) => {
-    const pw = genTempPw();
-    const tempHashed = await bcrypt.hash(pw, 10);
-    await updateDoc(doc(db, 'users', targetUid), { tempHashed });
-    if (opts?.requestId) {
-      await import('firebase/firestore').then(({ deleteDoc }) =>
-        deleteDoc(doc(db, 'passwordRequests', opts.requestId!))
-      );
+    try {
+      const pw = genTempPw();
+      const tempHashed = await bcrypt.hash(pw, 10);
+      await updateDoc(doc(db, 'users', targetUid), { tempHashed });
+      if (opts?.requestId) {
+        await import('firebase/firestore').then(({ deleteDoc: delDoc }) =>
+          delDoc(doc(db, 'passwordRequests', opts.requestId!))
+        );
+      }
+      const tempPwDisplay: TempPwDisplay = {
+        uid: targetUid,
+        pw,
+        whatsapp: opts?.whatsapp,
+        countryCode: opts?.countryCode,
+      };
+      set({ tempPwDisplay });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to generate temporary password';
+      set({ errorMsg: message });
+      setTimeout(() => set({ errorMsg: '' }), 4000);
     }
-    const tempPwDisplay: TempPwDisplay = {
-      uid: targetUid,
-      pw,
-      whatsapp: opts?.whatsapp,
-      countryCode: opts?.countryCode,
-    };
-    set({ tempPwDisplay });
   },
 
   submitPwRequest: async (name, countryCode, whatsapp) => {
@@ -316,7 +342,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
           userData.countryCode === countryCode;
       }
     } catch (err) {
-      if (err instanceof Error && err.message.includes('Username not found')) throw err;
+      throw err instanceof Error ? err : new Error('Failed to verify user');
     }
     const request: PasswordRequest = { uid, name, countryCode, whatsapp, requestedAt: Date.now(), verified };
     await fsSet(`passwordRequests/${uid}`, request as unknown as Record<string, unknown>);
@@ -331,18 +357,26 @@ export const useAppStore = create<StoreState>((set, get) => ({
           chat_id: tgChat,
           text: `🔐 FIFA 2026 — Password Request\n\nUser: ${name}\nWhatsApp: ${countryCode} ${whatsapp}\nStatus: ${verified ? '✓ Verified' : '⚠ Unverified'}`,
         }),
-      }).catch(() => {});
+      }).catch((err: unknown) => {
+        console.warn('[telegram] Failed to send admin notification:', err instanceof Error ? err.message : err);
+      });
     }
   },
 
   dismissPwRequest: async (requestId) => {
-    const { deleteDoc } = await import('firebase/firestore');
-    await deleteDoc(doc(db, 'passwordRequests', requestId));
-    set((s) => {
-      const updated = { ...s.pwRequests };
-      delete updated[requestId];
-      return { pwRequests: updated };
-    });
+    try {
+      const { deleteDoc: delDoc } = await import('firebase/firestore');
+      await delDoc(doc(db, 'passwordRequests', requestId));
+      set((s) => {
+        const updated = { ...s.pwRequests };
+        delete updated[requestId];
+        return { pwRequests: updated };
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to dismiss request';
+      set({ errorMsg: message });
+      setTimeout(() => set({ errorMsg: '' }), 4000);
+    }
   },
 
   refreshLeaderboard: async () => {

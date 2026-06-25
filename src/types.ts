@@ -86,6 +86,8 @@ export interface AppState {
   allPredsLoading: boolean;
   saving: boolean;
   msg: string;
+  errorMsg: string;
+  syncError: string;
   loginError: string;
   mustChangePassword: boolean;
   newPwVal: string;
