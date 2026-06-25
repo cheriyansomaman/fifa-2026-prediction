@@ -43,7 +43,10 @@ export function useLazySync(): void {
           });
           useAppStore.getState().setUsers(users);
         },
-        (err) => console.error('[sync] users:', err.message),
+        (err) => {
+          console.error('[sync] users:', err.message);
+          useAppStore.setState({ syncError: `Users sync failed: ${err.message}` });
+        },
       );
     }
 
@@ -55,7 +58,10 @@ export function useLazySync(): void {
           snap.forEach((d) => { pwRequests[d.id] = d.data() as PasswordRequest; });
           useAppStore.getState().setPwRequests(pwRequests);
         },
-        (err) => console.error('[sync] pw-requests:', err.message),
+        (err) => {
+          console.error('[sync] pw-requests:', err.message);
+          useAppStore.setState({ syncError: `Password requests sync failed: ${err.message}` });
+        },
       );
     }
 
@@ -73,7 +79,7 @@ export function useLazySync(): void {
         },
         (err) => {
           console.error('[sync] all-preds:', err.message);
-          useAppStore.setState({ allPredsLoading: false });
+          useAppStore.setState({ allPredsLoading: false, syncError: `Leaderboard sync failed: ${err.message}` });
         },
       );
     }

@@ -44,7 +44,7 @@ export default function App() {
   useFirebaseSync();
   useLazySync();
 
-  const { loading, uid, mustChangePassword, msg } = useAppStore();
+  const { loading, uid, mustChangePassword, msg, errorMsg, syncError } = useAppStore();
 
   if (loading) {
     return (
@@ -123,6 +123,74 @@ export default function App() {
           }}
         >
           {msg}
+        </div>
+      )}
+
+      {errorMsg && (
+        <div
+          className="toast-msg"
+          style={{
+            position: 'fixed',
+            top: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 200,
+            background: '#450a0a',
+            border: '1.5px solid #b91c1c',
+            borderRadius: 8,
+            padding: '10px 20px',
+            fontSize: 13,
+            fontWeight: 600,
+            color: '#f87171',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+            pointerEvents: 'none',
+            maxWidth: '90vw',
+            textAlign: 'center',
+          }}
+        >
+          {errorMsg}
+        </div>
+      )}
+
+      {syncError && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 200,
+            background: '#422006',
+            border: '1.5px solid #92400e',
+            borderRadius: 8,
+            padding: '8px 16px',
+            fontSize: 12,
+            fontWeight: 600,
+            color: '#fbbf24',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            maxWidth: '90vw',
+          }}
+        >
+          <span>{syncError}</span>
+          <button
+            onClick={() => useAppStore.setState({ syncError: '' })}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#fbbf24',
+              fontSize: 14,
+              cursor: 'pointer',
+              padding: '0 4px',
+              lineHeight: 1,
+            }}
+            type="button"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
         </div>
       )}
 
