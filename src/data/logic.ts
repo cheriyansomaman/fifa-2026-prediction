@@ -129,6 +129,10 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
   // best-ranked eligible third for a slot is also the only option for another
   // slot), so assignment uses augmenting paths (Kuhn's algorithm) to guarantee
   // every qualifying third lands in some eligible slot whenever one exists.
+  // Note: for a given set of 8 qualifying groups, multiple matchings can satisfy
+  // eligibility — FIFA's real draw uses one fixed predetermined table per
+  // combination, which isn't publicly reproduced here, so this picks a valid
+  // (not necessarily FIFA's exact) assignment, biased toward higher-ranked thirds.
   const pool = thirds.slice(0, 8).map((th) => th.group);
   const slotForGroup: Record<string, string> = {};
   const tryAssign = (slot: string, visited: Set<string>): boolean => {
