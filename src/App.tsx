@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import { Nav } from './components/Nav';
 import { PredictModal } from './components/modals/PredictModal';
 import { ResultModal } from './components/modals/ResultModal';
+import { EditTeamModal } from './components/modals/EditTeamModal';
 import { RulesModal } from './components/modals/RulesModal';
 import { LoginPage } from './pages/LoginPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
@@ -34,9 +35,10 @@ function Modals() {
   const { modal } = useAppStore();
   if (!modal) return null;
 
-  if (modal.type === 'predict') return <PredictModal />;
-  if (modal.type === 'result')  return <ResultModal />;
-  if (modal.type === 'rules')   return <RulesModal />;
+  if (modal.type === 'predict')  return <PredictModal />;
+  if (modal.type === 'result')   return <ResultModal />;
+  if (modal.type === 'editTeam') return <EditTeamModal />;
+  if (modal.type === 'rules')    return <RulesModal />;
   return null;
 }
 

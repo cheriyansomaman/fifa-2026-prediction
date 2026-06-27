@@ -1,4 +1,4 @@
-import type { Fixture, Prediction, Result, TeamStanding } from '../types';
+import type { Fixture, KoTeamOverride, Prediction, Result, TeamStanding } from '../types';
 import { FLAGS, GROUPS, GF } from './constants';
 
 export function flag(name: string): string {
@@ -85,7 +85,19 @@ export function qualifyingThirds(results: Record<number, Result>): Set<string> {
   return new Set(thirds.slice(0, 8).map((t) => t.name));
 }
 
-export function buildKO(results: Record<number, Result>): Fixture[] {
+export function buildKO(
+  results: Record<number, Result>,
+  overrides: Record<number, KoTeamOverride> = {},
+): Fixture[] {
+  // Admin-set overrides win over both live formulas and hardcoded literals — applied
+  // per-round before later rounds resolve via winner()/loser(), so the fix propagates forward.
+  const withOverrides = (fixtures: Fixture[]): Fixture[] =>
+    fixtures.map((f) => {
+      const o = overrides[f.id];
+      if (!o) return f;
+      return { ...f, home: o.home ?? f.home, away: o.away ?? f.away };
+    });
+
   const groupWinners: Record<string, string> = {};
   const groupRunners: Record<string, string> = {};
   const thirds: Array<{ team: string; pts: number; gd: number; gf: number }> = [];
@@ -200,7 +212,7 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
     { id: 115, home: 'South Africa', away: 'Canada', date: '2026-06-29T03:00:00Z', stage: 'r32', label: 'R32 #15', venue: 'Inglewood' },
     { id: 116, home: gr.L, away: gr.K, date: '2026-07-03T23:00:00Z', stage: 'r32', label: 'R32 #16', venue: 'Toronto' },
   ];
-  allKO.push(...r32);
+  allKO.push(...withOverrides(r32));
 
   const r16: Fixture[] = [
     { id: 201, home: winner(101), away: winner(102), date: '2026-07-04T21:00:00Z', stage: 'r16', label: 'R16 #1', venue: 'Philadelphia' },
@@ -212,7 +224,7 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
     { id: 207, home: winner(113), away: winner(114), date: '2026-07-07T16:00:00Z', stage: 'r16', label: 'R16 #7', venue: 'Atlanta' },
     { id: 208, home: winner(115), away: winner(116), date: '2026-07-07T20:00:00Z', stage: 'r16', label: 'R16 #8', venue: 'Vancouver' },
   ];
-  allKO.push(...r16);
+  allKO.push(...withOverrides(r16));
 
   const qf: Fixture[] = [
     { id: 301, home: winner(201), away: winner(202), date: '2026-07-09T20:00:00Z', stage: 'qf', label: 'QF #1', venue: 'Foxborough' },
@@ -220,24 +232,25 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
     { id: 303, home: winner(205), away: winner(206), date: '2026-07-11T21:00:00Z', stage: 'qf', label: 'QF #3', venue: 'Miami Gardens' },
     { id: 304, home: winner(207), away: winner(208), date: '2026-07-12T01:00:00Z', stage: 'qf', label: 'QF #4', venue: 'Kansas City' },
   ];
-  allKO.push(...qf);
+  allKO.push(...withOverrides(qf));
 
   const sf: Fixture[] = [
     { id: 401, home: winner(301), away: winner(302), date: '2026-07-14T19:00:00Z', stage: 'sf', label: 'SF #1', venue: 'Arlington' },
     { id: 402, home: winner(303), away: winner(304), date: '2026-07-15T19:00:00Z', stage: 'sf', label: 'SF #2', venue: 'Atlanta' },
   ];
-  allKO.push(...sf);
+  allKO.push(...withOverrides(sf));
 
   const third: Fixture[] = [
     { id: 450, home: loser(401), away: loser(402), date: '2026-07-18T21:00:00Z', stage: 'third', label: '3rd Place Play-off', venue: 'Miami Gardens' },
   ];
-  allKO.push(...third);
+  allKO.push(...withOverrides(third));
 
   const fin: Fixture[] = [
     { id: 501, home: winner(401), away: winner(402), date: '2026-07-19T19:00:00Z', stage: 'final', label: 'Final', venue: 'East Rutherford' },
   ];
+  allKO.push(...withOverrides(fin));
 
-  return [...r32, ...r16, ...qf, ...sf, ...third, ...fin];
+  return allKO;
 }
 
 export function calcPts(

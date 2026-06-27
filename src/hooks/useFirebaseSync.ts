@@ -1,7 +1,7 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { db } from '../firebase';
-import type { Prediction, Result } from '../types';
+import type { KoTeamOverride, Prediction, Result } from '../types';
 import { useAppStore } from '../store/useAppStore';
 
 export function useFirebaseSync(): void {
@@ -27,6 +27,20 @@ export function useFirebaseSync(): void {
       (err) => {
         console.error('[sync] results:', err.message);
         useAppStore.setState({ loading: false, syncError: `Results sync failed: ${err.message}` });
+      },
+    );
+
+    const unsubKoOverrides = onSnapshot(
+      doc(db, 'app', 'koOverrides'),
+      (snap) => {
+        const overrides: Record<number, KoTeamOverride> = snap.exists()
+          ? (snap.data() as Record<number, KoTeamOverride>)
+          : {};
+        useAppStore.getState().setKoOverrides(overrides);
+      },
+      (err) => {
+        console.error('[sync] koOverrides:', err.message);
+        useAppStore.setState({ syncError: `Knockout overrides sync failed: ${err.message}` });
       },
     );
 
@@ -60,6 +74,7 @@ export function useFirebaseSync(): void {
 
     return () => {
       unsubResults();
+      unsubKoOverrides();
       unsubOwnPreds();
       unsubUser();
     };

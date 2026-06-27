@@ -210,9 +210,19 @@ export function MatchCard({ fixture }: MatchCardProps) {
         {/* Home team */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
           <FlagImg name={fixture.home} size={36} />
-          <span style={{ position: 'relative', display: 'inline-block', fontSize: 13, fontWeight: 700, color: isHomeWinner ? '#3DFFA3' : '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
+          <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, color: isHomeWinner ? '#3DFFA3' : '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
             {fixture.home}
             {isHomeWinner && <WinnerSparks />}
+            {isAdmin && fixture.stage !== 'group' && (
+              <button
+                type="button"
+                onClick={() => setModal({ type: 'editTeam', fixture, side: 'home' })}
+                title="Fix team name"
+                style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}
+              >
+                ✎
+              </button>
+            )}
           </span>
         </div>
 
@@ -239,9 +249,19 @@ export function MatchCard({ fixture }: MatchCardProps) {
         {/* Away team */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
           <FlagImg name={fixture.away} size={36} />
-          <span style={{ position: 'relative', display: 'inline-block', fontSize: 13, fontWeight: 700, color: isAwayWinner ? '#3DFFA3' : '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
+          <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, color: isAwayWinner ? '#3DFFA3' : '#e2e8f0', textAlign: 'center', lineHeight: 1.2 }}>
             {fixture.away}
             {isAwayWinner && <WinnerSparks />}
+            {isAdmin && fixture.stage !== 'group' && (
+              <button
+                type="button"
+                onClick={() => setModal({ type: 'editTeam', fixture, side: 'away' })}
+                title="Fix team name"
+                style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}
+              >
+                ✎
+              </button>
+            )}
           </span>
         </div>
       </div>
