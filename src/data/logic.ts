@@ -214,26 +214,27 @@ export function buildKO(
   ];
   allKO.push(...withOverrides(r32));
 
-  // R16/QF pairings cross-wire R32/R16 winners per FIFA's official bracket (Match 89-96 for
-  // R16, Match 97-100 for QF) — verified by venue via WebSearch, NOT simple sequential
-  // adjacent pairing. e.g. M89 (Philadelphia) is Winner-M74 v Winner-M77, i.e. winner(102)
-  // v winner(105) in our id scheme (100+n = FIFA match 72+n), not winner(101) v winner(102).
+  // R16/QF pairings follow FIFA's fixed, pre-determined bracket — no redraw after R32.
+  // Each R32 match feeds a specific R16 slot in simple sequential pairs (Match 89 = W73 v
+  // W74, Match 90 = W75 v W76, ... Match 96 = W87 v W88), and each R16 winner feeds a
+  // specific QF slot the same way (Match 97 = W89 v W90, ... Match 100 = W95 v W96).
+  // In our id scheme, 100+n = FIFA match 72+n, so M89 = winner(101) v winner(102), etc.
   const r16: Fixture[] = [
-    { id: 201, home: winner(102), away: winner(105), date: '2026-07-04T21:00:00Z', stage: 'r16', label: 'R16 #1', venue: 'Philadelphia' },
-    { id: 202, home: winner(101), away: winner(103), date: '2026-07-04T17:00:00Z', stage: 'r16', label: 'R16 #2', venue: 'Houston' },
-    { id: 203, home: winner(104), away: winner(106), date: '2026-07-05T20:00:00Z', stage: 'r16', label: 'R16 #3', venue: 'East Rutherford' },
+    { id: 201, home: winner(101), away: winner(102), date: '2026-07-04T21:00:00Z', stage: 'r16', label: 'R16 #1', venue: 'Philadelphia' },
+    { id: 202, home: winner(103), away: winner(104), date: '2026-07-04T17:00:00Z', stage: 'r16', label: 'R16 #2', venue: 'Houston' },
+    { id: 203, home: winner(105), away: winner(106), date: '2026-07-05T20:00:00Z', stage: 'r16', label: 'R16 #3', venue: 'East Rutherford' },
     { id: 204, home: winner(107), away: winner(108), date: '2026-07-06T00:00:00Z', stage: 'r16', label: 'R16 #4', venue: 'Mexico City' },
-    { id: 205, home: winner(111), away: winner(112), date: '2026-07-06T19:00:00Z', stage: 'r16', label: 'R16 #5', venue: 'Arlington' },
-    { id: 206, home: winner(109), away: winner(110), date: '2026-07-07T00:00:00Z', stage: 'r16', label: 'R16 #6', venue: 'Seattle' },
-    { id: 207, home: winner(114), away: winner(116), date: '2026-07-07T16:00:00Z', stage: 'r16', label: 'R16 #7', venue: 'Atlanta' },
-    { id: 208, home: winner(113), away: winner(115), date: '2026-07-07T20:00:00Z', stage: 'r16', label: 'R16 #8', venue: 'Vancouver' },
+    { id: 205, home: winner(109), away: winner(110), date: '2026-07-06T19:00:00Z', stage: 'r16', label: 'R16 #5', venue: 'Arlington' },
+    { id: 206, home: winner(111), away: winner(112), date: '2026-07-07T00:00:00Z', stage: 'r16', label: 'R16 #6', venue: 'Seattle' },
+    { id: 207, home: winner(113), away: winner(114), date: '2026-07-07T16:00:00Z', stage: 'r16', label: 'R16 #7', venue: 'Atlanta' },
+    { id: 208, home: winner(115), away: winner(116), date: '2026-07-07T20:00:00Z', stage: 'r16', label: 'R16 #8', venue: 'Vancouver' },
   ];
   allKO.push(...withOverrides(r16));
 
   const qf: Fixture[] = [
     { id: 301, home: winner(201), away: winner(202), date: '2026-07-09T20:00:00Z', stage: 'qf', label: 'QF #1', venue: 'Foxborough' },
-    { id: 302, home: winner(205), away: winner(206), date: '2026-07-10T19:00:00Z', stage: 'qf', label: 'QF #2', venue: 'Inglewood' },
-    { id: 303, home: winner(203), away: winner(204), date: '2026-07-11T21:00:00Z', stage: 'qf', label: 'QF #3', venue: 'Miami Gardens' },
+    { id: 302, home: winner(203), away: winner(204), date: '2026-07-10T19:00:00Z', stage: 'qf', label: 'QF #2', venue: 'Inglewood' },
+    { id: 303, home: winner(205), away: winner(206), date: '2026-07-11T21:00:00Z', stage: 'qf', label: 'QF #3', venue: 'Miami Gardens' },
     { id: 304, home: winner(207), away: winner(208), date: '2026-07-12T01:00:00Z', stage: 'qf', label: 'QF #4', venue: 'Kansas City' },
   ];
   allKO.push(...withOverrides(qf));
