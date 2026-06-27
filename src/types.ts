@@ -1,4 +1,4 @@
-export type Stage = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final';
+export type Stage = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'third' | 'final';
 
 export type Tab = 'fixtures' | 'groups' | 'knockout' | 'leaderboard' | 'results' | 'users';
 
@@ -68,7 +68,13 @@ export interface PasswordRequest {
 export type Modal =
   | { type: 'predict'; fixture: Fixture }
   | { type: 'result'; fixture: Fixture }
+  | { type: 'editTeam'; fixture: Fixture; side: 'home' | 'away' }
   | { type: 'rules' };
+
+export interface KoTeamOverride {
+  home?: string;
+  away?: string;
+}
 
 export interface AppState {
   tab: Tab;
@@ -78,6 +84,7 @@ export interface AppState {
   users: Record<string, string>;
   preds: Record<string, Record<number, Prediction>>;
   results: Record<number, Result>;
+  koOverrides: Record<number, KoTeamOverride>;
   ko: Fixture[];
   modal: Modal | null;
   nameVal: string;

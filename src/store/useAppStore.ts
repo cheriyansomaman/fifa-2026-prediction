@@ -6,6 +6,7 @@ import { db, fsSet } from '../firebase';
 import type {
   AppState,
   Fixture,
+  KoTeamOverride,
   Modal,
   PasswordRequest,
   Prediction,
@@ -69,6 +70,8 @@ type Actions = {
   setConfirmPwVal: (v: string) => void;
   setUsers: (users: Record<string, string>) => void;
   setResults: (results: Record<number, Result>) => void;
+  setKoOverrides: (overrides: Record<number, KoTeamOverride>) => void;
+  setKoTeamOverride: (fixtureId: number, side: 'home' | 'away', name: string) => Promise<void>;
   setWaVal: (v: string) => void;
   setWaCodeVal: (v: string) => void;
   setPreds: (preds: Record<string, Record<number, Prediction>>) => void;
@@ -99,6 +102,7 @@ export const useAppStore = create<StoreState>((set, get) => ({
   users: {},
   preds: {},
   results: {},
+  koOverrides: {},
   ko: [],
   modal: null,
   nameVal: '',
@@ -128,7 +132,8 @@ export const useAppStore = create<StoreState>((set, get) => ({
   setNewPwVal: (newPwVal) => set({ newPwVal }),
   setConfirmPwVal: (confirmPwVal) => set({ confirmPwVal }),
   setUsers: (users) => set({ users }),
-  setResults: (results) => set({ results, ko: buildKO(results) }),
+  setResults: (results) => set((s) => ({ results, ko: buildKO(results, s.koOverrides) })),
+  setKoOverrides: (koOverrides) => set((s) => ({ koOverrides, ko: buildKO(s.results, koOverrides) })),
   setWaVal: (waVal) => set({ waVal }),
   setWaCodeVal: (waCodeVal) => set({ waCodeVal }),
   setPreds: (preds) => set({ preds }),
@@ -285,6 +290,22 @@ export const useAppStore = create<StoreState>((set, get) => ({
       setTimeout(() => set({ msg: '' }), 2500);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to save result';
+      set({ saving: false, errorMsg: message });
+      setTimeout(() => set({ errorMsg: '' }), 4000);
+    }
+  },
+
+  setKoTeamOverride: async (fixtureId, side, name) => {
+    if (!get().isAdmin) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    set({ saving: true, modal: null });
+    try {
+      await fsSet('app/koOverrides', { [fixtureId]: { [side]: trimmed } });
+      set({ saving: false, msg: '✓ Team name fixed' });
+      setTimeout(() => set({ msg: '' }), 2500);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update team name';
       set({ saving: false, errorMsg: message });
       setTimeout(() => set({ errorMsg: '' }), 4000);
     }
