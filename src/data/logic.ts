@@ -138,26 +138,58 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
     return r.penaltyWinner ?? 'TBC';
   };
 
+  // Loser of a knockout match — mirrors winner(), used for the 3rd-place play-off.
+  const loser = (id: number): string => {
+    const r = results[id];
+    if (!r) return 'TBC';
+
+    const hg = Number(r.homeGoals);
+    const ag = Number(r.awayGoals);
+
+    const fix = allKO.find((f) => f.id === id);
+    if (!fix) return 'TBC';
+
+    if (!Number.isFinite(hg) || !Number.isFinite(ag)) {
+      if (!r.winner) return 'TBC';
+      return r.winner === fix.home ? fix.away : fix.home;
+    }
+
+    if (hg > ag) return fix.away;
+    if (ag > hg) return fix.home;
+
+    if (r.homePenGoals != null && r.awayPenGoals != null) {
+      return r.homePenGoals > r.awayPenGoals ? fix.away : fix.home;
+    }
+
+    if (!r.penaltyWinner) return 'TBC';
+    return r.penaltyWinner === fix.home ? fix.away : fix.home;
+  };
+
   const gw = groupWinners;
   const gr = groupRunners;
 
+  // R32 dates below are best-effort, cross-referenced against FIFA's published schedule via
+  // WebSearch (WebFetch to fifa.com is blocked in this environment). Venue + matchup-category
+  // pairings (e.g. "winner vs runner-up at Inglewood") were corroborated across multiple
+  // searches and are high-confidence; exact kickoff minutes carry lower confidence than the
+  // dates/venues. QF, SF, and Final dates were independently verified as already correct.
   const r32: Fixture[] = [
-    { id: 101, home: gw.A, away: t(4), date: '2026-07-01T01:00:00Z', stage: 'r32', label: 'R32 #1', venue: 'Mexico City' },
-    { id: 102, home: gw.C, away: gr.F, date: '2026-06-29T17:00:00Z', stage: 'r32', label: 'R32 #2', venue: 'Houston' },
-    { id: 103, home: gw.F, away: gr.C, date: '2026-06-30T01:00:00Z', stage: 'r32', label: 'R32 #3', venue: 'Guadalupe' },
-    { id: 104, home: gw.E, away: t(0), date: '2026-06-29T20:30:00Z', stage: 'r32', label: 'R32 #4', venue: 'Foxborough' },
-    { id: 105, home: gr.E, away: gr.I, date: '2026-06-30T17:00:00Z', stage: 'r32', label: 'R32 #5', venue: 'Arlington' },
-    { id: 106, home: gw.I, away: t(1), date: '2026-06-30T21:00:00Z', stage: 'r32', label: 'R32 #6', venue: 'East Rutherford' },
+    { id: 101, home: gw.A, away: t(4), date: '2026-07-01T08:00:00Z', stage: 'r32', label: 'R32 #1', venue: 'Mexico City' },
+    { id: 102, home: gw.C, away: gr.F, date: '2026-06-29T23:00:00Z', stage: 'r32', label: 'R32 #2', venue: 'Houston' },
+    { id: 103, home: gw.F, away: gr.C, date: '2026-06-30T08:00:00Z', stage: 'r32', label: 'R32 #3', venue: 'Guadalupe' },
+    { id: 104, home: gw.E, away: t(0), date: '2026-06-30T01:30:00Z', stage: 'r32', label: 'R32 #4', venue: 'Foxborough' },
+    { id: 105, home: gr.E, away: gr.I, date: '2026-06-30T23:00:00Z', stage: 'r32', label: 'R32 #5', venue: 'Arlington' },
+    { id: 106, home: gw.I, away: t(1), date: '2026-07-01T02:00:00Z', stage: 'r32', label: 'R32 #6', venue: 'East Rutherford' },
     { id: 107, home: gw.L, away: t(2), date: '2026-07-01T16:00:00Z', stage: 'r32', label: 'R32 #7', venue: 'Atlanta' },
     { id: 108, home: gw.G, away: t(3), date: '2026-07-01T20:00:00Z', stage: 'r32', label: 'R32 #8', venue: 'Seattle' },
-    { id: 109, home: gw.D, away: t(5), date: '2026-07-02T00:00:00Z', stage: 'r32', label: 'R32 #9', venue: 'Santa Clara' },
-    { id: 110, home: gw.B, away: t(7), date: '2026-07-03T03:00:00Z', stage: 'r32', label: 'R32 #10', venue: 'Vancouver' },
+    { id: 109, home: gw.D, away: t(5), date: '2026-07-03T03:00:00Z', stage: 'r32', label: 'R32 #9', venue: 'Santa Clara' },
+    { id: 110, home: gw.B, away: t(7), date: '2026-07-04T06:00:00Z', stage: 'r32', label: 'R32 #10', venue: 'Vancouver' },
     { id: 111, home: gw.J, away: gr.H, date: '2026-07-03T22:00:00Z', stage: 'r32', label: 'R32 #11', venue: 'Miami Gardens' },
-    { id: 112, home: gw.K, away: t(6), date: '2026-07-04T01:30:00Z', stage: 'r32', label: 'R32 #12', venue: 'Kansas City' },
-    { id: 113, home: gw.H, away: gr.J, date: '2026-07-02T19:00:00Z', stage: 'r32', label: 'R32 #13', venue: 'Inglewood' },
-    { id: 114, home: gr.D, away: gr.G, date: '2026-07-03T18:00:00Z', stage: 'r32', label: 'R32 #14', venue: 'Arlington' },
-    { id: 115, home: gr.A, away: gr.B, date: '2026-06-28T19:00:00Z', stage: 'r32', label: 'R32 #15', venue: 'Inglewood' },
-    { id: 116, home: gr.L, away: gr.K, date: '2026-07-02T23:00:00Z', stage: 'r32', label: 'R32 #16', venue: 'Toronto' },
+    { id: 112, home: gw.K, away: t(6), date: '2026-07-04T02:30:00Z', stage: 'r32', label: 'R32 #12', venue: 'Kansas City' },
+    { id: 113, home: gw.H, away: gr.J, date: '2026-07-03T22:00:00Z', stage: 'r32', label: 'R32 #13', venue: 'Inglewood' },
+    { id: 114, home: gr.D, away: gr.G, date: '2026-07-03T19:00:00Z', stage: 'r32', label: 'R32 #14', venue: 'Arlington' },
+    { id: 115, home: gr.A, away: gr.B, date: '2026-06-29T03:00:00Z', stage: 'r32', label: 'R32 #15', venue: 'Inglewood' },
+    { id: 116, home: gr.L, away: gr.K, date: '2026-07-03T23:00:00Z', stage: 'r32', label: 'R32 #16', venue: 'Toronto' },
   ];
   allKO.push(...r32);
 
@@ -187,11 +219,16 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
   ];
   allKO.push(...sf);
 
+  const third: Fixture[] = [
+    { id: 450, home: loser(401), away: loser(402), date: '2026-07-18T21:00:00Z', stage: 'third', label: '3rd Place Play-off', venue: 'Miami Gardens' },
+  ];
+  allKO.push(...third);
+
   const fin: Fixture[] = [
     { id: 501, home: winner(401), away: winner(402), date: '2026-07-19T19:00:00Z', stage: 'final', label: 'Final', venue: 'East Rutherford' },
   ];
 
-  return [...r32, ...r16, ...qf, ...sf, ...fin];
+  return [...r32, ...r16, ...qf, ...sf, ...third, ...fin];
 }
 
 export function calcPts(

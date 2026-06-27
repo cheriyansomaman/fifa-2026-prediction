@@ -10,6 +10,7 @@ const KO_ROUNDS: { stage: Stage; label: string }[] = [
   { stage: 'r16', label: 'Round of 16' },
   { stage: 'qf', label: 'Quarter-Finals' },
   { stage: 'sf', label: 'Semi-Finals' },
+  { stage: 'third', label: '3rd Place Play-off' },
   { stage: 'final', label: 'Final' },
 ];
 

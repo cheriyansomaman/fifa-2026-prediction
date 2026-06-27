@@ -1,4 +1,4 @@
-export type Stage = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final';
+export type Stage = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'third' | 'final';
 
 export type Tab = 'fixtures' | 'groups' | 'knockout' | 'leaderboard' | 'results' | 'users';
 
