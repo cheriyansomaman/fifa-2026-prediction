@@ -92,7 +92,7 @@ const initialSession = loadSession();
 
 export const useAppStore = create<StoreState>((set, get) => ({
   // ── Initial state ────────────────────────────────────────────────────────
-  tab: 'fixtures',
+  tab: 'knockout',
   grpTab: 'All',
   uid: initialSession?.uid ?? null,
   isAdmin: initialSession?.isAdmin ?? false,
