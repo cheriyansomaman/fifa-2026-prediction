@@ -15,6 +15,16 @@ const TOTAL_W = (NUM_ROUNDS - 1) * COL_STRIDE + CARD_W;
 const HEADER_H = 24;
 const LINE_COLOR = '#334155';
 
+// Explicit bracket display order reflects actual pairing topology.
+// R16 #3(203) pairs with R16 #8(208) for QF #2, so they appear adjacent.
+const BRACKET_ORDER: Record<string, number[]> = {
+  r32:   [101, 104, 102, 105, 109, 110, 116, 115, 111, 112, 103, 106, 107, 108, 113, 114],
+  r16:   [201, 202, 203, 208, 204, 205, 206, 207],
+  qf:    [301, 302, 303, 304],
+  sf:    [401, 402],
+  final: [501],
+};
+
 const ROUNDS = [
   { stage: 'r32',   label: 'Round of 32' },
   { stage: 'r16',   label: 'Round of 16' },
@@ -35,13 +45,19 @@ function cardCenterY(round: number, match: number) {
   return cardY(round, match) + CARD_H / 2;
 }
 
+function orderedFixtures(ko: Fixture[], stage: string): Fixture[] {
+  const order = BRACKET_ORDER[stage] ?? [];
+  const byId = new Map(ko.map(f => [f.id, f]));
+  return order.map(id => byId.get(id)).filter((f): f is Fixture => f !== undefined);
+}
+
 function ConnectorLines({ ko }: { ko: Fixture[] }) {
   const segs: React.ReactElement[] = [];
 
   ROUNDS.forEach(({ stage }, ri) => {
     if (ri >= NUM_ROUNDS - 1) return;
 
-    const count = ko.filter(f => f.stage === stage).length;
+    const count = orderedFixtures(ko, stage).length;
     const x1 = cardX(ri) + CARD_W;
     const x2 = cardX(ri + 1);
     const xm = x1 + (x2 - x1) / 2;
@@ -174,9 +190,7 @@ export function BracketView() {
 
         {/* Match cards */}
         {ROUNDS.map(({ stage }, ri) => {
-          const fixtures = ko
-            .filter(f => f.stage === stage)
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          const fixtures = orderedFixtures(ko, stage);
           return fixtures.map((f, mi) => (
             <BracketCard
               key={f.id}
