@@ -1,14 +1,21 @@
 import type { CSSProperties } from 'react';
 
-type MatchFilter = 'upcoming' | 'finished';
+type MatchFilter = 'upcoming' | 'finished' | 'bracket';
+
+const FILTER_LABELS: Record<MatchFilter, string> = {
+  upcoming: 'Upcoming',
+  finished: 'Finished',
+  bracket: 'Bracket',
+};
 
 interface MatchFilterToggleProps {
   value: MatchFilter;
   onChange: (filter: MatchFilter) => void;
   style?: CSSProperties;
+  filters?: MatchFilter[];
 }
 
-export function MatchFilterToggle({ value, onChange, style }: MatchFilterToggleProps) {
+export function MatchFilterToggle({ value, onChange, style, filters = ['upcoming', 'finished'] }: MatchFilterToggleProps) {
   return (
     <div
       style={{
@@ -21,7 +28,7 @@ export function MatchFilterToggle({ value, onChange, style }: MatchFilterToggleP
         ...style,
       }}
     >
-      {(['upcoming', 'finished'] as MatchFilter[]).map((f) => (
+      {filters.map((f) => (
         <button
           key={f}
           type="button"
@@ -39,7 +46,7 @@ export function MatchFilterToggle({ value, onChange, style }: MatchFilterToggleP
             transition: 'background 150ms, color 150ms',
           }}
         >
-          {f === 'upcoming' ? 'Upcoming' : 'Finished'}
+          {FILTER_LABELS[f]}
         </button>
       ))}
     </div>

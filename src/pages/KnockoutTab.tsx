@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { MatchCard } from '../components/MatchCard';
+import { BracketView } from '../components/BracketView';
 import { MatchFilterToggle, SectionHeading, EmptyState } from '../components/shared';
 import type { MatchFilter } from '../components/shared';
 import type { Stage } from '../types';
@@ -31,10 +32,17 @@ export function KnockoutTab() {
   return (
     <div>
       {hasAny && (
-        <MatchFilterToggle value={matchFilter} onChange={setMatchFilter} style={{ marginBottom: 24 }} />
+        <MatchFilterToggle
+          value={matchFilter}
+          onChange={setMatchFilter}
+          filters={['upcoming', 'finished', 'bracket']}
+          style={{ marginBottom: 24 }}
+        />
       )}
 
-      {visibleRounds.map(({ stage, label, fixtures }) => (
+      {matchFilter === 'bracket' && <BracketView />}
+
+      {matchFilter !== 'bracket' && visibleRounds.map(({ stage, label, fixtures }) => (
         <div key={stage} style={{ marginBottom: 32 }}>
           <SectionHeading accentColor="#16a34a">{label}</SectionHeading>
           <div className="ko-grid">
@@ -45,7 +53,7 @@ export function KnockoutTab() {
         </div>
       ))}
 
-      {hasAny && visibleRounds.length === 0 && (
+      {matchFilter !== 'bracket' && hasAny && visibleRounds.length === 0 && (
         <div style={{ color: '#475569', textAlign: 'center', padding: 40, fontSize: 14 }}>
           No {matchFilter} knockout matches
         </div>
