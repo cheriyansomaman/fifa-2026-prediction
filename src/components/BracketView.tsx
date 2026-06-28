@@ -2,78 +2,135 @@ import { useAppStore } from '../store/useAppStore';
 import { flag } from '../data/logic';
 import type { Fixture, Result } from '../types';
 
-const CARD_H = 56;
-const BASE_GAP = 8;
-const UNIT = CARD_H + BASE_GAP;
+const CARD_W = 152;
+const CARD_H = 52;
+const GAP = 8;
+const UNIT = CARD_H + GAP;         // 60px per R32 slot
+const COL_GAP = 20;                 // horizontal gap between rounds (for connectors)
+const COL_STRIDE = CARD_W + COL_GAP;
+const NUM_ROUNDS = 5;
+const NUM_SLOTS = 16;               // R32 has 16 matches
+const TOTAL_H = NUM_SLOTS * UNIT;  // 960px
+const TOTAL_W = (NUM_ROUNDS - 1) * COL_STRIDE + CARD_W;
+const HEADER_H = 24;
+const LINE_COLOR = '#334155';
 
 const ROUNDS = [
-  { stage: 'r32', label: 'R32' },
-  { stage: 'r16', label: 'R16' },
-  { stage: 'qf',  label: 'QF'  },
-  { stage: 'sf',  label: 'SF'  },
+  { stage: 'r32',   label: 'Round of 32' },
+  { stage: 'r16',   label: 'Round of 16' },
+  { stage: 'qf',    label: 'Quarter-Finals' },
+  { stage: 'sf',    label: 'Semi-Finals' },
   { stage: 'final', label: 'Final' },
 ] as const;
 
-function TeamRow({ name, goals, winner }: { name: string; goals?: number; winner: boolean }) {
+function cardX(round: number) { return round * COL_STRIDE; }
+
+function cardY(round: number, match: number) {
+  const slots = Math.pow(2, round);
+  const slotH = slots * UNIT;
+  return match * slotH + (slotH - CARD_H) / 2;
+}
+
+function cardCenterY(round: number, match: number) {
+  return cardY(round, match) + CARD_H / 2;
+}
+
+function ConnectorLines({ ko }: { ko: Fixture[] }) {
+  const segs: React.ReactElement[] = [];
+
+  ROUNDS.forEach(({ stage }, ri) => {
+    if (ri >= NUM_ROUNDS - 1) return;
+
+    const count = ko.filter(f => f.stage === stage).length;
+    const x1 = cardX(ri) + CARD_W;
+    const x2 = cardX(ri + 1);
+    const xm = x1 + (x2 - x1) / 2;
+
+    for (let j = 0; j < count; j += 2) {
+      const y1 = cardCenterY(ri, j);
+      const y2 = cardCenterY(ri, j + 1);
+      const ym = (y1 + y2) / 2;
+      segs.push(
+        <g key={`c-${ri}-${j}`}>
+          <line x1={x1} y1={y1} x2={xm} y2={y1} stroke={LINE_COLOR} strokeWidth={1} />
+          <line x1={x1} y1={y2} x2={xm} y2={y2} stroke={LINE_COLOR} strokeWidth={1} />
+          <line x1={xm} y1={y1} x2={xm} y2={y2} stroke={LINE_COLOR} strokeWidth={1} />
+          <line x1={xm} y1={ym} x2={x2} y2={ym} stroke={LINE_COLOR} strokeWidth={1} />
+        </g>,
+      );
+    }
+  });
+
+  return <>{segs}</>;
+}
+
+function TeamRow({ name, goals, win }: { name: string; goals?: number; win: boolean }) {
   return (
-    <div
-      style={{
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 7px',
+      height: '50%',
+      background: win ? 'rgba(0,196,96,0.12)' : 'transparent',
+    }}>
+      <span style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '3px 8px',
-        background: winner ? 'rgba(0,196,96,0.12)' : 'transparent',
-        borderRadius: 4,
-      }}
-    >
-      <span style={{ fontSize: 12, color: winner ? '#00C460' : '#cbd5e1', fontWeight: winner ? 700 : 400, display: 'flex', alignItems: 'center', gap: 5 }}>
-        <span>{flag(name)}</span>
-        <span style={{ maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+        gap: 4,
+        overflow: 'hidden',
+        fontSize: 11,
+        fontWeight: win ? 700 : 400,
+        color: win ? '#00C460' : '#cbd5e1',
+      }}>
+        <span style={{ fontSize: 13, flexShrink: 0 }}>{flag(name)}</span>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
       </span>
       {goals !== undefined && (
-        <span style={{ fontSize: 12, fontWeight: 700, color: winner ? '#00C460' : '#94a3b8', marginLeft: 6 }}>{goals}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: win ? '#00C460' : '#94a3b8', marginLeft: 4, flexShrink: 0 }}>
+          {goals}
+        </span>
       )}
     </div>
   );
 }
 
-function BracketCard({ fixture, result }: { fixture: Fixture; result?: Result }) {
+function BracketCard({ f, result, x, y }: { f: Fixture; result?: Result; x: number; y: number }) {
   const hg = result?.homeGoals !== undefined ? Number(result.homeGoals) : undefined;
   const ag = result?.awayGoals !== undefined ? Number(result.awayGoals) : undefined;
-  const hasResult = hg !== undefined && ag !== undefined;
+  const played = hg !== undefined && ag !== undefined && Number.isFinite(hg) && Number.isFinite(ag);
 
   let homeWin = false;
   let awayWin = false;
-  if (hasResult) {
-    if (hg > ag) homeWin = true;
-    else if (ag > hg) awayWin = true;
+  if (played) {
+    if (hg > ag) { homeWin = true; }
+    else if (ag > hg) { awayWin = true; }
     else if (result?.penaltyWinner) {
-      homeWin = result.penaltyWinner === fixture.home;
-      awayWin = result.penaltyWinner === fixture.away;
+      homeWin = result.penaltyWinner === f.home;
+      awayWin = result.penaltyWinner === f.away;
     } else if (result?.homePenGoals !== undefined && result?.awayPenGoals !== undefined) {
       homeWin = result.homePenGoals > result.awayPenGoals;
-      awayWin = result.awayPenGoals > result.homePenGoals;
+      awayWin = !homeWin;
     }
   }
 
   return (
-    <div
-      style={{
-        height: CARD_H,
-        minWidth: 160,
-        background: '#0f172a',
-        border: '1px solid #1e293b',
-        borderRadius: 8,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-evenly',
-        flexShrink: 0,
-      }}
-    >
-      <TeamRow name={fixture.home} goals={hg} winner={homeWin} />
-      <div style={{ height: 1, background: '#1e293b', margin: '0 8px' }} />
-      <TeamRow name={fixture.away} goals={ag} winner={awayWin} />
+    <div style={{
+      position: 'absolute',
+      left: x,
+      top: y,
+      width: CARD_W,
+      height: CARD_H,
+      background: '#0f172a',
+      border: '1px solid #1e293b',
+      borderRadius: 7,
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <TeamRow name={f.home} goals={hg} win={homeWin} />
+      <div style={{ height: 1, background: '#1e293b', flexShrink: 0 }} />
+      <TeamRow name={f.away} goals={ag} win={awayWin} />
     </div>
   );
 }
@@ -82,47 +139,55 @@ export function BracketView() {
   const { ko, results } = useAppStore();
 
   return (
-    <div style={{ overflowX: 'auto', paddingBottom: 16 }}>
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', minWidth: 'max-content' }}>
-        {ROUNDS.map(({ stage, label }, i) => {
+    <div style={{ overflowX: 'auto', overflowY: 'auto', paddingBottom: 16, WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ position: 'relative', width: TOTAL_W, height: TOTAL_H + HEADER_H }}>
+
+        {/* Round labels */}
+        {ROUNDS.map(({ stage, label }, ri) => (
+          <div
+            key={stage}
+            style={{
+              position: 'absolute',
+              left: cardX(ri),
+              top: 0,
+              width: CARD_W,
+              textAlign: 'center',
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 1,
+              color: '#475569',
+              textTransform: 'uppercase',
+            }}
+          >
+            {label}
+          </div>
+        ))}
+
+        {/* Connector lines */}
+        <svg
+          style={{ position: 'absolute', left: 0, top: HEADER_H, overflow: 'visible', pointerEvents: 'none' }}
+          width={TOTAL_W}
+          height={TOTAL_H}
+        >
+          <ConnectorLines ko={ko} />
+        </svg>
+
+        {/* Match cards */}
+        {ROUNDS.map(({ stage }, ri) => {
           const fixtures = ko
-            .filter((f) => f.stage === stage)
+            .filter(f => f.stage === stage)
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-          const multiplier = Math.pow(2, i);
-          const paddingTop = ((multiplier - 1) * UNIT) / 2;
-          const gap = multiplier * UNIT - CARD_H;
-
-          return (
-            <div key={stage} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: 1,
-                  color: '#475569',
-                  textTransform: 'uppercase',
-                  marginBottom: 8,
-                  textAlign: 'center',
-                }}
-              >
-                {label}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap,
-                  paddingTop,
-                }}
-              >
-                {fixtures.map((f) => (
-                  <BracketCard key={f.id} fixture={f} result={results[f.id]} />
-                ))}
-              </div>
-            </div>
-          );
+          return fixtures.map((f, mi) => (
+            <BracketCard
+              key={f.id}
+              f={f}
+              result={results[f.id]}
+              x={cardX(ri)}
+              y={cardY(ri, mi) + HEADER_H}
+            />
+          ));
         })}
+
       </div>
     </div>
   );
