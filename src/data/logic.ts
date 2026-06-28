@@ -86,32 +86,6 @@ export function qualifyingThirds(results: Record<number, Result>): Set<string> {
 }
 
 export function buildKO(results: Record<number, Result>): Fixture[] {
-  const groupWinners: Record<string, string> = {};
-  const groupRunners: Record<string, string> = {};
-  const thirds: Array<{ team: string; pts: number; gd: number; gf: number }> = [];
-
-  Object.keys(GROUPS).forEach((g) => {
-    const groupMatches = GF.filter((f) => f.group === g);
-    const allPlayed = groupMatches.every((f) => results[f.id]);
-
-    if (allPlayed) {
-      const s = standings(g, results);
-      groupWinners[g] = s[0]?.name ?? 'TBC';
-      groupRunners[g] = s[1]?.name ?? 'TBC';
-      if (s[2]) {
-        thirds.push({ team: s[2].name, pts: s[2].pts, gd: s[2].gd, gf: s[2].gf });
-      }
-    } else {
-      groupWinners[g] = 'TBC';
-      groupRunners[g] = 'TBC';
-    }
-  });
-
-  thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-
-  const t = (i: number): string => thirds[i]?.team ?? 'TBC';
-
-  // allKO is built up progressively so winner() can reference earlier matches
   const allKO: Fixture[] = [];
 
   const winner = (id: number): string => {
@@ -138,46 +112,43 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
     return r.penaltyWinner ?? 'TBC';
   };
 
-  const gw = groupWinners;
-  const gr = groupRunners;
-
   const r32: Fixture[] = [
-    { id: 101, home: gw.A, away: t(4), date: '2026-07-01T01:00:00Z', stage: 'r32', label: 'R32 #1', venue: 'Mexico City' },
-    { id: 102, home: gw.C, away: gr.F, date: '2026-06-29T17:00:00Z', stage: 'r32', label: 'R32 #2', venue: 'Houston' },
-    { id: 103, home: gw.F, away: gr.C, date: '2026-06-30T01:00:00Z', stage: 'r32', label: 'R32 #3', venue: 'Guadalupe' },
-    { id: 104, home: gw.E, away: t(0), date: '2026-06-29T20:30:00Z', stage: 'r32', label: 'R32 #4', venue: 'Foxborough' },
-    { id: 105, home: gr.E, away: gr.I, date: '2026-06-30T17:00:00Z', stage: 'r32', label: 'R32 #5', venue: 'Arlington' },
-    { id: 106, home: gw.I, away: t(1), date: '2026-06-30T21:00:00Z', stage: 'r32', label: 'R32 #6', venue: 'East Rutherford' },
-    { id: 107, home: gw.L, away: t(2), date: '2026-07-01T16:00:00Z', stage: 'r32', label: 'R32 #7', venue: 'Atlanta' },
-    { id: 108, home: gw.G, away: t(3), date: '2026-07-01T20:00:00Z', stage: 'r32', label: 'R32 #8', venue: 'Seattle' },
-    { id: 109, home: gw.D, away: t(5), date: '2026-07-02T00:00:00Z', stage: 'r32', label: 'R32 #9', venue: 'Santa Clara' },
-    { id: 110, home: gw.B, away: t(7), date: '2026-07-03T03:00:00Z', stage: 'r32', label: 'R32 #10', venue: 'Vancouver' },
-    { id: 111, home: gw.J, away: gr.H, date: '2026-07-03T22:00:00Z', stage: 'r32', label: 'R32 #11', venue: 'Miami Gardens' },
-    { id: 112, home: gw.K, away: t(6), date: '2026-07-04T01:30:00Z', stage: 'r32', label: 'R32 #12', venue: 'Kansas City' },
-    { id: 113, home: gw.H, away: gr.J, date: '2026-07-02T19:00:00Z', stage: 'r32', label: 'R32 #13', venue: 'Inglewood' },
-    { id: 114, home: gr.D, away: gr.G, date: '2026-07-03T18:00:00Z', stage: 'r32', label: 'R32 #14', venue: 'Arlington' },
-    { id: 115, home: gr.A, away: gr.B, date: '2026-06-28T19:00:00Z', stage: 'r32', label: 'R32 #15', venue: 'Inglewood' },
-    { id: 116, home: gr.L, away: gr.K, date: '2026-07-02T23:00:00Z', stage: 'r32', label: 'R32 #16', venue: 'Toronto' },
+    { id: 101, home: 'Canada', away: 'South Africa', date: '2026-06-28T16:00:00Z', stage: 'r32', label: 'R32 #1', venue: '' },
+    { id: 102, home: 'Germany', away: 'Paraguay', date: '2026-06-29T19:30:00Z', stage: 'r32', label: 'R32 #2', venue: '' },
+    { id: 103, home: 'Brazil', away: 'Japan', date: '2026-06-28T23:00:00Z', stage: 'r32', label: 'R32 #3', venue: '' },
+    { id: 104, home: 'Netherlands', away: 'Morocco', date: '2026-06-30T01:00:00Z', stage: 'r32', label: 'R32 #4', venue: '' },
+    { id: 105, home: 'France', away: 'Sweden', date: '2026-06-30T17:00:00Z', stage: 'r32', label: 'R32 #5', venue: '' },
+    { id: 106, home: 'Ivory Coast', away: 'Norway', date: '2026-06-30T21:00:00Z', stage: 'r32', label: 'R32 #6', venue: '' },
+    { id: 107, home: 'Mexico', away: 'Bosnia & Herzegovina', date: '2026-07-01T01:00:00Z', stage: 'r32', label: 'R32 #7', venue: '' },
+    { id: 108, home: 'England', away: 'Congo DR', date: '2026-07-01T16:00:00Z', stage: 'r32', label: 'R32 #8', venue: '' },
+    { id: 109, home: 'Belgium', away: 'Senegal', date: '2026-07-01T20:00:00Z', stage: 'r32', label: 'R32 #9', venue: '' },
+    { id: 110, home: 'United States', away: 'Bosnia & Herzegovina', date: '2026-07-02T00:00:00Z', stage: 'r32', label: 'R32 #10', venue: '' },
+    { id: 111, home: 'Spain', away: 'Austria', date: '2026-07-02T19:00:00Z', stage: 'r32', label: 'R32 #11', venue: '' },
+    { id: 112, home: 'Portugal', away: 'Croatia', date: '2026-07-02T23:00:00Z', stage: 'r32', label: 'R32 #12', venue: '' },
+    { id: 113, home: 'Switzerland', away: 'Algeria', date: '2026-07-03T03:00:00Z', stage: 'r32', label: 'R32 #13', venue: '' },
+    { id: 114, home: 'Italy', away: 'Tunisia', date: '2026-07-03T18:00:00Z', stage: 'r32', label: 'R32 #14', venue: '' },
+    { id: 115, home: 'Argentina', away: 'Cape Verde', date: '2026-07-03T22:00:00Z', stage: 'r32', label: 'R32 #15', venue: '' },
+    { id: 116, home: 'Australia', away: 'Egypt', date: '2026-07-04T01:30:00Z', stage: 'r32', label: 'R32 #16', venue: '' },
   ];
   allKO.push(...r32);
 
   const r16: Fixture[] = [
-    { id: 201, home: winner(101), away: winner(102), date: '2026-07-04T21:00:00Z', stage: 'r16', label: 'R16 #1', venue: 'Philadelphia' },
-    { id: 202, home: winner(103), away: winner(104), date: '2026-07-04T17:00:00Z', stage: 'r16', label: 'R16 #2', venue: 'Houston' },
-    { id: 203, home: winner(105), away: winner(106), date: '2026-07-05T20:00:00Z', stage: 'r16', label: 'R16 #3', venue: 'East Rutherford' },
+    { id: 201, home: winner(102), away: winner(105), date: '2026-07-04T21:00:00Z', stage: 'r16', label: 'R16 #1', venue: 'Philadelphia' },
+    { id: 202, home: winner(101), away: winner(103), date: '2026-07-04T17:00:00Z', stage: 'r16', label: 'R16 #2', venue: 'Houston' },
+    { id: 203, home: winner(104), away: winner(106), date: '2026-07-05T20:00:00Z', stage: 'r16', label: 'R16 #3', venue: 'East Rutherford' },
     { id: 204, home: winner(107), away: winner(108), date: '2026-07-06T00:00:00Z', stage: 'r16', label: 'R16 #4', venue: 'Mexico City' },
-    { id: 205, home: winner(109), away: winner(110), date: '2026-07-06T19:00:00Z', stage: 'r16', label: 'R16 #5', venue: 'Arlington' },
-    { id: 206, home: winner(111), away: winner(112), date: '2026-07-07T00:00:00Z', stage: 'r16', label: 'R16 #6', venue: 'Seattle' },
-    { id: 207, home: winner(113), away: winner(114), date: '2026-07-07T16:00:00Z', stage: 'r16', label: 'R16 #7', venue: 'Atlanta' },
-    { id: 208, home: winner(115), away: winner(116), date: '2026-07-07T20:00:00Z', stage: 'r16', label: 'R16 #8', venue: 'Vancouver' },
+    { id: 205, home: winner(111), away: winner(112), date: '2026-07-06T19:00:00Z', stage: 'r16', label: 'R16 #5', venue: 'Arlington' },
+    { id: 206, home: winner(109), away: winner(110), date: '2026-07-07T00:00:00Z', stage: 'r16', label: 'R16 #6', venue: 'Seattle' },
+    { id: 207, home: winner(114), away: winner(116), date: '2026-07-07T16:00:00Z', stage: 'r16', label: 'R16 #7', venue: 'Atlanta' },
+    { id: 208, home: winner(113), away: winner(115), date: '2026-07-07T20:00:00Z', stage: 'r16', label: 'R16 #8', venue: 'Vancouver' },
   ];
   allKO.push(...r16);
 
   const qf: Fixture[] = [
     { id: 301, home: winner(201), away: winner(202), date: '2026-07-09T20:00:00Z', stage: 'qf', label: 'QF #1', venue: 'Foxborough' },
-    { id: 302, home: winner(203), away: winner(204), date: '2026-07-10T19:00:00Z', stage: 'qf', label: 'QF #2', venue: 'Inglewood' },
-    { id: 303, home: winner(205), away: winner(206), date: '2026-07-11T21:00:00Z', stage: 'qf', label: 'QF #3', venue: 'Miami Gardens' },
-    { id: 304, home: winner(207), away: winner(208), date: '2026-07-12T01:00:00Z', stage: 'qf', label: 'QF #4', venue: 'Kansas City' },
+    { id: 302, home: winner(203), away: winner(204), date: '2026-07-10T00:00:00Z', stage: 'qf', label: 'QF #2', venue: 'Inglewood' },
+    { id: 303, home: winner(205), away: winner(206), date: '2026-07-10T19:00:00Z', stage: 'qf', label: 'QF #3', venue: 'Miami Gardens' },
+    { id: 304, home: winner(207), away: winner(208), date: '2026-07-11T00:00:00Z', stage: 'qf', label: 'QF #4', venue: 'Kansas City' },
   ];
   allKO.push(...qf);
 
