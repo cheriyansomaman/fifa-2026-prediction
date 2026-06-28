@@ -126,9 +126,9 @@ export function buildKO(results: Record<number, Result>): Fixture[] {
     { id: 111, home: 'Spain', away: 'Austria', date: '2026-07-02T19:00:00Z', stage: 'r32', label: 'R32 #11', venue: '' },
     { id: 112, home: 'Portugal', away: 'Croatia', date: '2026-07-02T23:00:00Z', stage: 'r32', label: 'R32 #12', venue: '' },
     { id: 113, home: 'Switzerland', away: 'Algeria', date: '2026-07-03T03:00:00Z', stage: 'r32', label: 'R32 #13', venue: '' },
-    { id: 114, home: 'Italy', away: 'Tunisia', date: '2026-07-03T18:00:00Z', stage: 'r32', label: 'R32 #14', venue: '' },
+    { id: 114, home: 'Australia', away: 'Egypt', date: '2026-07-03T18:00:00Z', stage: 'r32', label: 'R32 #14', venue: '' },
     { id: 115, home: 'Argentina', away: 'Cape Verde', date: '2026-07-03T22:00:00Z', stage: 'r32', label: 'R32 #15', venue: '' },
-    { id: 116, home: 'Australia', away: 'Egypt', date: '2026-07-04T01:30:00Z', stage: 'r32', label: 'R32 #16', venue: '' },
+    { id: 116, home: 'Colombia', away: 'Ghana', date: '2026-07-04T01:30:00Z', stage: 'r32', label: 'R32 #16', venue: '' },
   ];
   allKO.push(...r32);
 
