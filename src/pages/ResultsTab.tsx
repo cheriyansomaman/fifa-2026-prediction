@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Fixture, Result } from '../types';
+import type { Fixture, MatchStatus, Result } from '../types';
 import { useAppStore } from '../store/useAppStore';
 import { GF } from '../data/constants';
 import { fmtDate } from '../data/logic';
@@ -12,7 +12,14 @@ interface MatchScoreState {
   ag: number;
   homePen: number;
   awayPen: number;
+  status: MatchStatus;
 }
+
+const STATUS_TAGS: { label: string; value: MatchStatus; color: string }[] = [
+  { label: 'Scheduled', value: 'SCHEDULED', color: '#64748b' },
+  { label: 'Live', value: 'IN_PLAY', color: '#f97316' },
+  { label: 'Finished', value: 'FINISHED', color: '#3DFFA3' },
+];
 
 export function ResultsTab() {
   const { results, ko, enterResult, saving } = useAppStore();
@@ -26,10 +33,11 @@ export function ResultsTab() {
       ag: existing.awayGoals ?? 0,
       homePen: existing.homePenGoals ?? 0,
       awayPen: existing.awayPenGoals ?? 0,
+      status: existing.matchStatus ?? 'SCHEDULED',
     };
   };
 
-  const updateScore = (id: number, field: keyof MatchScoreState, value: number) => {
+  const updateScore = <K extends keyof MatchScoreState>(id: number, field: K, value: MatchScoreState[K]) => {
     setLocalScores((prev) => {
       const existing = prev[id] ?? getScore(id, results[id] ?? {});
       return { ...prev, [id]: { ...existing, [field]: value } };
@@ -41,7 +49,7 @@ export function ResultsTab() {
     const isKO = stage !== 'group';
     const score = localScores[id] ?? getScore(id, results[id] ?? {});
     const showPens = isKO && score.hg === score.ag;
-    const result: Result = { homeGoals: score.hg, awayGoals: score.ag };
+    const result: Result = { homeGoals: score.hg, awayGoals: score.ag, matchStatus: score.status };
     if (showPens) {
       result.homePenGoals = score.homePen;
       result.awayPenGoals = score.awayPen;
@@ -72,6 +80,35 @@ export function ResultsTab() {
         {/* Date + match info */}
         <div style={{ fontSize: 11, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
           {fmtDate(fixture.date)}
+        </div>
+
+        {/* Status tags */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+          {STATUS_TAGS.map((tag) => {
+            const isActive = score.status === tag.value;
+            return (
+              <button
+                key={tag.label}
+                onClick={() => updateScore(fixture.id, 'status', tag.value)}
+                className="btn-sport"
+                style={{
+                  background: isActive ? `${tag.color}22` : '#0f172a',
+                  border: `1.5px solid ${isActive ? tag.color : '#1e293b'}`,
+                  color: isActive ? tag.color : '#64748b',
+                  borderRadius: 20,
+                  padding: '3px 12px',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                }}
+                type="button"
+              >
+                {tag.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Main score row */}
