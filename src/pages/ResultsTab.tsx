@@ -69,6 +69,9 @@ export function ResultsTab() {
       result.homePenGoals = score.homePen;
       result.awayPenGoals = score.awayPen;
       result.penaltyWinner = score.homePen > score.awayPen ? home : away;
+      result.winner = result.penaltyWinner;
+    } else if (score.hg !== score.ag) {
+      result.winner = score.hg > score.ag ? home : away;
     }
     enterResult(fixture, result);
   };
