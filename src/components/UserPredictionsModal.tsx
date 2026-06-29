@@ -242,17 +242,17 @@ export function UserPredictionsModal({ uid, name, onClose }: Props) {
         </p>
       )}
 
-      {groupFixtures.length > 0 && (
+      {koFixtures.length > 0 && (
         <>
-          <SectionLabel label="Group Stage" color="#4ade80" />
-          {groupFixtures.map(buildRow)}
+          <SectionLabel label="Knockout Stage" color="#f59e0b" />
+          {koFixtures.map(buildRow)}
         </>
       )}
 
-      {koFixtures.length > 0 && (
-        <div style={{ marginTop: groupFixtures.length > 0 ? 16 : 0 }}>
-          <SectionLabel label="Knockout Stage" color="#f59e0b" />
-          {koFixtures.map(buildRow)}
+      {groupFixtures.length > 0 && (
+        <div style={{ marginTop: koFixtures.length > 0 ? 16 : 0 }}>
+          <SectionLabel label="Group Stage" color="#4ade80" />
+          {groupFixtures.map(buildRow)}
         </div>
       )}
     </ModalOverlay>
