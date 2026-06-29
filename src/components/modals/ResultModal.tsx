@@ -21,11 +21,14 @@ export function ResultModal() {
   const showPens = isKO && hg === ag;
 
   const handleSave = () => {
-    const result: Result = { homeGoals: hg, awayGoals: ag };
+    const result: Result = { homeGoals: hg, awayGoals: ag, matchStatus: 'FINISHED' };
     if (showPens) {
       result.homePenGoals = homePen;
       result.awayPenGoals = awayPen;
       result.penaltyWinner = homePen > awayPen ? fixture.home : fixture.away;
+      result.winner = result.penaltyWinner;
+    } else if (hg !== ag) {
+      result.winner = hg > ag ? fixture.home : fixture.away;
     }
     enterResult(fixture, result);
   };
