@@ -19,7 +19,12 @@ export function KnockoutTab() {
   const [matchFilter, setMatchFilter] = useState<MatchFilter>('upcoming');
 
   const hasAny = ko.length > 0;
-  const isFinished = (id: number) => results[id]?.homeGoals !== undefined;
+  const isFinished = (id: number) => {
+    const res = results[id];
+    const hasScore = res?.homeGoals !== undefined;
+    const isLive = res?.matchStatus === 'IN_PLAY' || res?.matchStatus === 'PAUSED';
+    return hasScore && !isLive;
+  };
 
   const visibleRounds = KO_ROUNDS.map(({ stage, label }) => {
     const fixtures = ko
