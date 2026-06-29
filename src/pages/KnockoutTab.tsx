@@ -30,7 +30,9 @@ export function KnockoutTab() {
     const fixtures = ko
       .filter((f) => f.stage === stage)
       .filter((f) => matchFilter === 'finished' ? isFinished(f.id) : !isFinished(f.id))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => matchFilter === 'finished'
+        ? new Date(b.date).getTime() - new Date(a.date).getTime()
+        : new Date(a.date).getTime() - new Date(b.date).getTime());
     return { stage, label, fixtures };
   }).filter(({ fixtures }) => fixtures.length > 0);
 
