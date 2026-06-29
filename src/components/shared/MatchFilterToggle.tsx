@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react';
 
-type MatchFilter = 'upcoming' | 'finished' | 'bracket';
+type MatchFilter = 'upcoming' | 'live' | 'finished' | 'bracket';
 
 const FILTER_LABELS: Record<MatchFilter, string> = {
   upcoming: 'Upcoming',
+  live: 'Live',
   finished: 'Finished',
   bracket: 'Bracket',
 };

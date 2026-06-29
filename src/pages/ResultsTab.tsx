@@ -1,37 +1,60 @@
 import { useState } from 'react';
-import type { Fixture, Result } from '../types';
+import type { Fixture, MatchStatus, Result } from '../types';
 import { useAppStore } from '../store/useAppStore';
 import { GF } from '../data/constants';
-import { fmtDate } from '../data/logic';
+import { fmtDate, predOpen } from '../data/logic';
 import { Stepper } from '../components/Stepper';
 import { FlagImg } from '../components/FlagImg';
-import { SectionHeading } from '../components/shared';
+import { MatchFilterToggle } from '../components/shared';
+import type { MatchFilter } from '../components/shared';
 
 interface MatchScoreState {
   hg: number;
   ag: number;
   homePen: number;
   awayPen: number;
+  status: MatchStatus;
+}
+
+const STATUS_TAGS: { label: string; value: MatchStatus; color: string }[] = [
+  { label: 'Scheduled', value: 'SCHEDULED', color: '#64748b' },
+  { label: 'Live', value: 'IN_PLAY', color: '#f97316' },
+  { label: 'Finished', value: 'FINISHED', color: '#3DFFA3' },
+];
+
+function effectiveStatus(fixture: Fixture, existing: Result): MatchStatus {
+  return existing.matchStatus ?? (predOpen(fixture.date) ? 'SCHEDULED' : 'FINISHED');
+}
+
+function isLiveStatus(s: MatchStatus): boolean {
+  return s === 'IN_PLAY' || s === 'PAUSED';
+}
+
+function isFinishedStatus(s: MatchStatus): boolean {
+  return s === 'FINISHED' || s === 'AWARDED';
 }
 
 export function ResultsTab() {
   const { results, ko, enterResult, saving } = useAppStore();
 
   const [localScores, setLocalScores] = useState<Record<number, MatchScoreState>>({});
+  const [tab, setTab] = useState<MatchFilter>('upcoming');
 
-  const getScore = (id: number, existing: Result): MatchScoreState => {
-    if (localScores[id]) return localScores[id];
+  const getScore = (fixture: Fixture, existing: Result): MatchScoreState => {
+    if (localScores[fixture.id]) return localScores[fixture.id];
     return {
       hg: existing.homeGoals ?? 0,
       ag: existing.awayGoals ?? 0,
       homePen: existing.homePenGoals ?? 0,
       awayPen: existing.awayPenGoals ?? 0,
+      status: effectiveStatus(fixture, existing),
     };
   };
 
-  const updateScore = (id: number, field: keyof MatchScoreState, value: number) => {
+  const updateScore = <K extends keyof MatchScoreState>(fixture: Fixture, field: K, value: MatchScoreState[K]) => {
     setLocalScores((prev) => {
-      const existing = prev[id] ?? getScore(id, results[id] ?? {});
+      const id = fixture.id;
+      const existing = prev[id] ?? getScore(fixture, results[id] ?? {});
       return { ...prev, [id]: { ...existing, [field]: value } };
     });
   };
@@ -39,9 +62,9 @@ export function ResultsTab() {
   const handleSave = (fixture: Fixture) => {
     const { id, home, away, stage } = fixture;
     const isKO = stage !== 'group';
-    const score = localScores[id] ?? getScore(id, results[id] ?? {});
+    const score = localScores[id] ?? getScore(fixture, results[id] ?? {});
     const showPens = isKO && score.hg === score.ag;
-    const result: Result = { homeGoals: score.hg, awayGoals: score.ag };
+    const result: Result = { homeGoals: score.hg, awayGoals: score.ag, matchStatus: score.status };
     if (showPens) {
       result.homePenGoals = score.homePen;
       result.awayPenGoals = score.awayPen;
@@ -54,7 +77,7 @@ export function ResultsTab() {
     const existing = results[fixture.id] ?? {};
     const hasRes = existing.homeGoals !== undefined;
     const isKO = fixture.stage !== 'group';
-    const score = getScore(fixture.id, existing);
+    const score = getScore(fixture, existing);
     const showPens = isKO && score.hg === score.ag;
 
     return (
@@ -71,7 +94,36 @@ export function ResultsTab() {
       >
         {/* Date + match info */}
         <div style={{ fontSize: 11, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
-          {fmtDate(fixture.date)}
+          {fmtDate(fixture.date)} · {fixture.label ?? (fixture.group ? `Group ${fixture.group}` : fixture.stage.toUpperCase())}
+        </div>
+
+        {/* Status tags */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+          {STATUS_TAGS.map((tag) => {
+            const isActive = score.status === tag.value;
+            return (
+              <button
+                key={tag.label}
+                onClick={() => updateScore(fixture, 'status', tag.value)}
+                className="btn-sport"
+                style={{
+                  background: isActive ? `${tag.color}22` : '#0f172a',
+                  border: `1.5px solid ${isActive ? tag.color : '#1e293b'}`,
+                  color: isActive ? tag.color : '#64748b',
+                  borderRadius: 20,
+                  padding: '3px 12px',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                }}
+                type="button"
+              >
+                {tag.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Main score row */}
@@ -87,14 +139,14 @@ export function ResultsTab() {
             <Stepper
               initialValue={score.hg}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'hg', v)}
+              onChange={(v) => updateScore(fixture, 'hg', v)}
               size="sm"
             />
             <span style={{ fontSize: 16, color: '#475569', fontWeight: 700 }}>&ndash;</span>
             <Stepper
               initialValue={score.ag}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'ag', v)}
+              onChange={(v) => updateScore(fixture, 'ag', v)}
               size="sm"
             />
           </div>
@@ -147,7 +199,7 @@ export function ResultsTab() {
               label={fixture.home}
               initialValue={score.homePen}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'homePen', v)}
+              onChange={(v) => updateScore(fixture, 'homePen', v)}
               size="sm"
             />
             <span style={{ fontSize: 14, color: '#475569', fontWeight: 700 }}>&ndash;</span>
@@ -155,7 +207,7 @@ export function ResultsTab() {
               label={fixture.away}
               initialValue={score.awayPen}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'awayPen', v)}
+              onChange={(v) => updateScore(fixture, 'awayPen', v)}
               size="sm"
             />
           </div>
@@ -164,23 +216,34 @@ export function ResultsTab() {
     );
   };
 
+  const allFixtures = [...GF, ...ko];
+
+  const filtered = allFixtures.filter((f) => {
+    const status = effectiveStatus(f, results[f.id] ?? {});
+    if (tab === 'live') return isLiveStatus(status);
+    if (tab === 'finished') return isFinishedStatus(status);
+    return !isLiveStatus(status) && !isFinishedStatus(status);
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+    return tab === 'finished' ? -diff : diff;
+  });
+
   return (
     <div>
-      {/* Group Stage */}
-      <div style={{ marginBottom: 36 }}>
-        <SectionHeading accentColor="#f59e0b" style={{ marginBottom: 16 }}>
-          Group Stage
-        </SectionHeading>
-        {[...GF].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
-      </div>
+      <MatchFilterToggle
+        value={tab}
+        onChange={setTab}
+        filters={['upcoming', 'live', 'finished']}
+        style={{ marginBottom: 20 }}
+      />
 
-      {/* Knockout Stage */}
-      {ko.length > 0 && (
-        <div>
-          <SectionHeading accentColor="#f59e0b" style={{ marginBottom: 16 }}>
-            Knockout Stage
-          </SectionHeading>
-          {[...ko].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
+      {sorted.map((f) => renderMatchRow(f))}
+
+      {sorted.length === 0 && (
+        <div style={{ color: '#475569', textAlign: 'center', padding: 40, fontSize: 14 }}>
+          No {tab} matches
         </div>
       )}
     </div>
