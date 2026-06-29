@@ -225,7 +225,10 @@ export function ResultsTab() {
     return !isLiveStatus(status) && !isFinishedStatus(status);
   });
 
-  const sorted = [...filtered].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sorted = [...filtered].sort((a, b) => {
+    const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+    return tab === 'finished' ? -diff : diff;
+  });
 
   return (
     <div>
