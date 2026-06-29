@@ -5,7 +5,8 @@ import { GF } from '../data/constants';
 import { fmtDate, predOpen } from '../data/logic';
 import { Stepper } from '../components/Stepper';
 import { FlagImg } from '../components/FlagImg';
-import { SectionHeading } from '../components/shared';
+import { MatchFilterToggle } from '../components/shared';
+import type { MatchFilter } from '../components/shared';
 
 interface MatchScoreState {
   hg: number;
@@ -21,10 +22,23 @@ const STATUS_TAGS: { label: string; value: MatchStatus; color: string }[] = [
   { label: 'Finished', value: 'FINISHED', color: '#3DFFA3' },
 ];
 
+function effectiveStatus(fixture: Fixture, existing: Result): MatchStatus {
+  return existing.matchStatus ?? (predOpen(fixture.date) ? 'SCHEDULED' : 'FINISHED');
+}
+
+function isLiveStatus(s: MatchStatus): boolean {
+  return s === 'IN_PLAY' || s === 'PAUSED';
+}
+
+function isFinishedStatus(s: MatchStatus): boolean {
+  return s === 'FINISHED' || s === 'AWARDED';
+}
+
 export function ResultsTab() {
   const { results, ko, enterResult, saving } = useAppStore();
 
   const [localScores, setLocalScores] = useState<Record<number, MatchScoreState>>({});
+  const [tab, setTab] = useState<MatchFilter>('upcoming');
 
   const getScore = (fixture: Fixture, existing: Result): MatchScoreState => {
     if (localScores[fixture.id]) return localScores[fixture.id];
@@ -33,7 +47,7 @@ export function ResultsTab() {
       ag: existing.awayGoals ?? 0,
       homePen: existing.homePenGoals ?? 0,
       awayPen: existing.awayPenGoals ?? 0,
-      status: existing.matchStatus ?? (predOpen(fixture.date) ? 'SCHEDULED' : 'FINISHED'),
+      status: effectiveStatus(fixture, existing),
     };
   };
 
@@ -80,7 +94,7 @@ export function ResultsTab() {
       >
         {/* Date + match info */}
         <div style={{ fontSize: 11, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
-          {fmtDate(fixture.date)}
+          {fmtDate(fixture.date)} · {fixture.label ?? (fixture.group ? `Group ${fixture.group}` : fixture.stage.toUpperCase())}
         </div>
 
         {/* Status tags */}
@@ -202,23 +216,31 @@ export function ResultsTab() {
     );
   };
 
+  const allFixtures = [...GF, ...ko];
+
+  const filtered = allFixtures.filter((f) => {
+    const status = effectiveStatus(f, results[f.id] ?? {});
+    if (tab === 'live') return isLiveStatus(status);
+    if (tab === 'finished') return isFinishedStatus(status);
+    return !isLiveStatus(status) && !isFinishedStatus(status);
+  });
+
+  const sorted = [...filtered].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   return (
     <div>
-      {/* Group Stage */}
-      <div style={{ marginBottom: 36 }}>
-        <SectionHeading accentColor="#f59e0b" style={{ marginBottom: 16 }}>
-          Group Stage
-        </SectionHeading>
-        {[...GF].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
-      </div>
+      <MatchFilterToggle
+        value={tab}
+        onChange={setTab}
+        filters={['upcoming', 'live', 'finished']}
+        style={{ marginBottom: 20 }}
+      />
 
-      {/* Knockout Stage */}
-      {ko.length > 0 && (
-        <div>
-          <SectionHeading accentColor="#f59e0b" style={{ marginBottom: 16 }}>
-            Knockout Stage
-          </SectionHeading>
-          {[...ko].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((f) => renderMatchRow(f))}
+      {sorted.map((f) => renderMatchRow(f))}
+
+      {sorted.length === 0 && (
+        <div style={{ color: '#475569', textAlign: 'center', padding: 40, fontSize: 14 }}>
+          No {tab} matches
         </div>
       )}
     </div>
