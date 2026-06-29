@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Fixture, MatchStatus, Result } from '../types';
 import { useAppStore } from '../store/useAppStore';
 import { GF } from '../data/constants';
-import { fmtDate } from '../data/logic';
+import { fmtDate, predOpen } from '../data/logic';
 import { Stepper } from '../components/Stepper';
 import { FlagImg } from '../components/FlagImg';
 import { SectionHeading } from '../components/shared';
@@ -26,20 +26,21 @@ export function ResultsTab() {
 
   const [localScores, setLocalScores] = useState<Record<number, MatchScoreState>>({});
 
-  const getScore = (id: number, existing: Result): MatchScoreState => {
-    if (localScores[id]) return localScores[id];
+  const getScore = (fixture: Fixture, existing: Result): MatchScoreState => {
+    if (localScores[fixture.id]) return localScores[fixture.id];
     return {
       hg: existing.homeGoals ?? 0,
       ag: existing.awayGoals ?? 0,
       homePen: existing.homePenGoals ?? 0,
       awayPen: existing.awayPenGoals ?? 0,
-      status: existing.matchStatus ?? 'SCHEDULED',
+      status: existing.matchStatus ?? (predOpen(fixture.date) ? 'SCHEDULED' : 'FINISHED'),
     };
   };
 
-  const updateScore = <K extends keyof MatchScoreState>(id: number, field: K, value: MatchScoreState[K]) => {
+  const updateScore = <K extends keyof MatchScoreState>(fixture: Fixture, field: K, value: MatchScoreState[K]) => {
     setLocalScores((prev) => {
-      const existing = prev[id] ?? getScore(id, results[id] ?? {});
+      const id = fixture.id;
+      const existing = prev[id] ?? getScore(fixture, results[id] ?? {});
       return { ...prev, [id]: { ...existing, [field]: value } };
     });
   };
@@ -47,7 +48,7 @@ export function ResultsTab() {
   const handleSave = (fixture: Fixture) => {
     const { id, home, away, stage } = fixture;
     const isKO = stage !== 'group';
-    const score = localScores[id] ?? getScore(id, results[id] ?? {});
+    const score = localScores[id] ?? getScore(fixture, results[id] ?? {});
     const showPens = isKO && score.hg === score.ag;
     const result: Result = { homeGoals: score.hg, awayGoals: score.ag, matchStatus: score.status };
     if (showPens) {
@@ -62,7 +63,7 @@ export function ResultsTab() {
     const existing = results[fixture.id] ?? {};
     const hasRes = existing.homeGoals !== undefined;
     const isKO = fixture.stage !== 'group';
-    const score = getScore(fixture.id, existing);
+    const score = getScore(fixture, existing);
     const showPens = isKO && score.hg === score.ag;
 
     return (
@@ -89,7 +90,7 @@ export function ResultsTab() {
             return (
               <button
                 key={tag.label}
-                onClick={() => updateScore(fixture.id, 'status', tag.value)}
+                onClick={() => updateScore(fixture, 'status', tag.value)}
                 className="btn-sport"
                 style={{
                   background: isActive ? `${tag.color}22` : '#0f172a',
@@ -124,14 +125,14 @@ export function ResultsTab() {
             <Stepper
               initialValue={score.hg}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'hg', v)}
+              onChange={(v) => updateScore(fixture, 'hg', v)}
               size="sm"
             />
             <span style={{ fontSize: 16, color: '#475569', fontWeight: 700 }}>&ndash;</span>
             <Stepper
               initialValue={score.ag}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'ag', v)}
+              onChange={(v) => updateScore(fixture, 'ag', v)}
               size="sm"
             />
           </div>
@@ -184,7 +185,7 @@ export function ResultsTab() {
               label={fixture.home}
               initialValue={score.homePen}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'homePen', v)}
+              onChange={(v) => updateScore(fixture, 'homePen', v)}
               size="sm"
             />
             <span style={{ fontSize: 14, color: '#475569', fontWeight: 700 }}>&ndash;</span>
@@ -192,7 +193,7 @@ export function ResultsTab() {
               label={fixture.away}
               initialValue={score.awayPen}
               accent="#f59e0b"
-              onChange={(v) => updateScore(fixture.id, 'awayPen', v)}
+              onChange={(v) => updateScore(fixture, 'awayPen', v)}
               size="sm"
             />
           </div>
