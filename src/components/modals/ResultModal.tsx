@@ -13,13 +13,19 @@ export function ResultModal() {
   const existing: Result = results[fixture.id] ?? {};
   const isKO = fixture.stage !== 'group';
 
-  const [hg, setHg] = useState<number>(existing.homeGoals ?? 0);
-  const [ag, setAg] = useState<number>(existing.awayGoals ?? 0);
+  const [hg, setHgRaw] = useState<number>(existing.homeGoals ?? 0);
+  const [ag, setAgRaw] = useState<number>(existing.awayGoals ?? 0);
   const [homePen, setHomePen] = useState<number>(existing.homePenGoals ?? 0);
   const [awayPen, setAwayPen] = useState<number>(existing.awayPenGoals ?? 0);
   const [penError, setPenError] = useState(false);
+  const [decisiveConfirmed, setDecisiveConfirmed] = useState(false);
+  const [confirmError, setConfirmError] = useState(false);
+
+  const setHg = (v: number) => { setHgRaw(v); setDecisiveConfirmed(false); setConfirmError(false); };
+  const setAg = (v: number) => { setAgRaw(v); setDecisiveConfirmed(false); setConfirmError(false); };
 
   const showPens = isKO && hg === ag;
+  const needsDecisiveConfirm = isKO && hg !== ag;
 
   const handleSave = () => {
     if (showPens && homePen === awayPen) {
@@ -27,6 +33,12 @@ export function ResultModal() {
       return;
     }
     setPenError(false);
+
+    if (needsDecisiveConfirm && !decisiveConfirmed) {
+      setConfirmError(true);
+      return;
+    }
+    setConfirmError(false);
 
     const result: Result = { homeGoals: hg, awayGoals: ag };
     if (showPens) {
@@ -73,6 +85,36 @@ export function ResultModal() {
           onChange={setAg}
         />
       </div>
+
+      {/* Decisive-score confirmation (KO only, when not a draw) — guards against
+          accidentally saving a penalty-shootout score as the main result */}
+      {needsDecisiveConfirm && (
+        <>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 12,
+              color: '#94a3b8',
+              marginBottom: 16,
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={decisiveConfirmed}
+              onChange={(e) => { setDecisiveConfirmed(e.target.checked); setConfirmError(false); }}
+            />
+            Confirm {fixture.home} {hg}&ndash;{ag} {fixture.away} is the final score (not decided by penalties)
+          </label>
+          {confirmError && (
+            <div style={{ color: '#f87171', fontSize: 12, textAlign: 'center', marginTop: -10, marginBottom: 16 }}>
+              Please confirm this score before saving
+            </div>
+          )}
+        </>
+      )}
 
       {/* Penalty steppers (KO only, when draw) */}
       {isKO && showPens && (
