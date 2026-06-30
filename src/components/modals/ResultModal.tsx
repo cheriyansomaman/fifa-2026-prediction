@@ -17,10 +17,17 @@ export function ResultModal() {
   const [ag, setAg] = useState<number>(existing.awayGoals ?? 0);
   const [homePen, setHomePen] = useState<number>(existing.homePenGoals ?? 0);
   const [awayPen, setAwayPen] = useState<number>(existing.awayPenGoals ?? 0);
+  const [penError, setPenError] = useState(false);
 
   const showPens = isKO && hg === ag;
 
   const handleSave = () => {
+    if (showPens && homePen === awayPen) {
+      setPenError(true);
+      return;
+    }
+    setPenError(false);
+
     const result: Result = { homeGoals: hg, awayGoals: ag };
     if (showPens) {
       result.homePenGoals = homePen;
@@ -69,17 +76,24 @@ export function ResultModal() {
 
       {/* Penalty steppers (KO only, when draw) */}
       {isKO && showPens && (
-        <PenaltySteppers
-          homeTeam={fixture.home}
-          awayTeam={fixture.away}
-          homePen={homePen}
-          awayPen={awayPen}
-          onHomePenChange={setHomePen}
-          onAwayPenChange={setAwayPen}
-          accent="#f59e0b"
-          borderColor="#451a03"
-          label="Draw after 90 min — Penalty shootout"
-        />
+        <>
+          <PenaltySteppers
+            homeTeam={fixture.home}
+            awayTeam={fixture.away}
+            homePen={homePen}
+            awayPen={awayPen}
+            onHomePenChange={(v) => { setHomePen(v); setPenError(false); }}
+            onAwayPenChange={(v) => { setAwayPen(v); setPenError(false); }}
+            accent="#f59e0b"
+            borderColor="#451a03"
+            label="Draw after 90 min — Penalty shootout"
+          />
+          {penError && (
+            <div style={{ color: '#f87171', fontSize: 12, textAlign: 'center', marginTop: -10, marginBottom: 16 }}>
+              Pick a penalty shootout winner — scores can&apos;t be tied
+            </div>
+          )}
+        </>
       )}
 
       {/* Actions */}
