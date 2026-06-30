@@ -39,6 +39,7 @@ export function ResultsTab() {
 
   const [localScores, setLocalScores] = useState<Record<number, MatchScoreState>>({});
   const [tab, setTab] = useState<MatchFilter>('upcoming');
+  const [penErrors, setPenErrors] = useState<Record<number, boolean>>({});
 
   const getScore = (fixture: Fixture, existing: Result): MatchScoreState => {
     if (localScores[fixture.id]) return localScores[fixture.id];
@@ -57,6 +58,9 @@ export function ResultsTab() {
       const existing = prev[id] ?? getScore(fixture, results[id] ?? {});
       return { ...prev, [id]: { ...existing, [field]: value } };
     });
+    if (field === 'homePen' || field === 'awayPen') {
+      setPenErrors((prev) => ({ ...prev, [fixture.id]: false }));
+    }
   };
 
   const handleSave = (fixture: Fixture) => {
@@ -64,6 +68,13 @@ export function ResultsTab() {
     const isKO = stage !== 'group';
     const score = localScores[id] ?? getScore(fixture, results[id] ?? {});
     const showPens = isKO && score.hg === score.ag;
+
+    if (showPens && score.homePen === score.awayPen) {
+      setPenErrors((prev) => ({ ...prev, [id]: true }));
+      return;
+    }
+    setPenErrors((prev) => ({ ...prev, [id]: false }));
+
     const result: Result = { homeGoals: score.hg, awayGoals: score.ag, matchStatus: score.status };
     if (showPens) {
       result.homePenGoals = score.homePen;
@@ -210,6 +221,11 @@ export function ResultsTab() {
               onChange={(v) => updateScore(fixture, 'awayPen', v)}
               size="sm"
             />
+            {penErrors[fixture.id] && (
+              <span style={{ fontSize: 11, color: '#f87171' }}>
+                Pens can&apos;t be tied — pick a shootout winner
+              </span>
+            )}
           </div>
         )}
       </div>
