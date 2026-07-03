@@ -16,10 +16,12 @@ const HEADER_H = 24;
 const LINE_COLOR = '#334155';
 
 // Explicit bracket display order reflects actual pairing topology.
-// R16 #3(203) pairs with R16 #8(208) for QF #2, so they appear adjacent.
+// Connector lines group array entries in adjacent pairs (0,1),(2,3),...,
+// so each round's order must place winners feeding the same next-round
+// match next to each other.
 const BRACKET_ORDER: Record<string, number[]> = {
-  r32:   [101, 104, 102, 105, 109, 110, 116, 115, 111, 112, 103, 106, 107, 108, 113, 114],
-  r16:   [201, 202, 203, 208, 204, 205, 206, 207],
+  r32:   [101, 104, 102, 105, 109, 110, 111, 112, 103, 106, 107, 108, 113, 114, 116, 115],
+  r16:   [201, 202, 203, 204, 205, 206, 207, 208],
   qf:    [301, 302, 303, 304],
   sf:    [401, 402],
   final: [501],
