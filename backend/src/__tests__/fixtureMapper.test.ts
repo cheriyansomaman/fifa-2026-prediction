@@ -56,6 +56,16 @@ describe('resolveFixtureId', () => {
     expect(reverse).toBeNull();
   });
 
+  it('resolves KO fixtures regardless of home/away order (bracket slotting is our own convention, not the API\'s)', () => {
+    const index = buildFixtureIndex({
+      101: { homeGoals: 2, awayGoals: 0 }, // Canada beats South Africa
+      104: { homeGoals: 1, awayGoals: 2 }, // Morocco beats Netherlands
+    });
+    // R16 fixture 201 = winner(101) vs winner(104) = Canada vs Morocco
+    expect(resolveFixtureId('Canada', 'Morocco', index)).toBe(201);
+    expect(resolveFixtureId('Morocco', 'Canada', index)).toBe(201);
+  });
+
   it('resolves various group fixtures correctly', () => {
     const index = buildFixtureIndex({});
 

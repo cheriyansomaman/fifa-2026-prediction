@@ -16,8 +16,13 @@ export function buildFixtureIndex(results: Record<number, Result>): Map<string, 
     const koFixtures = buildKO(results);
     for (const f of koFixtures) {
       if (!f?.home || !f?.away || f.home === 'TBC' || f.away === 'TBC') continue;
-      const key = `${normalizeTeam(f.home)}|${normalizeTeam(f.away)}`;
-      index.set(key, f.id);
+      const home = normalizeTeam(f.home);
+      const away = normalizeTeam(f.away);
+      // KO home/away is our own bracket-slotting convention, not guaranteed
+      // to match football-data.org's designation for that slot — index both
+      // orders so resolution isn't order-sensitive for KO fixtures.
+      index.set(`${home}|${away}`, f.id);
+      index.set(`${away}|${home}`, f.id);
     }
   } catch (e) {
     console.warn('buildKO failed, using group fixtures only:', e instanceof Error ? e.message : e);
