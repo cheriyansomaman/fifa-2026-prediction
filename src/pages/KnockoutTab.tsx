@@ -26,7 +26,9 @@ export function KnockoutTab() {
     return hasScore && !isLive;
   };
 
-  const visibleRounds = KO_ROUNDS.map(({ stage, label }) => {
+  const roundOrder = matchFilter === 'finished' ? [...KO_ROUNDS].reverse() : KO_ROUNDS;
+
+  const visibleRounds = roundOrder.map(({ stage, label }) => {
     const fixtures = ko
       .filter((f) => f.stage === stage)
       .filter((f) => matchFilter === 'finished' ? isFinished(f.id) : !isFinished(f.id))
