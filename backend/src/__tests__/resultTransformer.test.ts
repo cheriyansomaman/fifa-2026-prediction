@@ -206,6 +206,73 @@ describe('toResult', () => {
     expect(result.awayGoals).toBe(0);
   });
 
+  it('flips home/away goals when the fixture was resolved with swapped orientation', () => {
+    // API says Morocco (home) 1–2 Brazil (away), but our fixture is Brazil vs Morocco
+    const match = makeFdMatch({
+      homeTeam: { id: 2, name: 'Morocco', shortName: 'Morocco', tla: 'MAR' },
+      awayTeam: { id: 1, name: 'Brazil', shortName: 'Brazil', tla: 'BRA' },
+      score: {
+        winner: 'AWAY_TEAM',
+        duration: 'REGULAR',
+        fullTime: { home: 1, away: 2 },
+        halfTime: { home: 0, away: 1 },
+        regularTime: null,
+        extraTime: null,
+        penalties: null,
+      },
+    });
+    const result = toResult(match, true);
+
+    expect(result.homeGoals).toBe(2); // Brazil's goals in our fixture's home slot
+    expect(result.awayGoals).toBe(1);
+    expect(result.winner).toBe('Brazil'); // names are orientation-independent
+  });
+
+  it('flips penalty goals when swapped, keeping penaltyWinner as a name', () => {
+    const match = makeFdMatch({
+      homeTeam: { id: 2, name: 'Morocco', shortName: 'Morocco', tla: 'MAR' },
+      awayTeam: { id: 1, name: 'Brazil', shortName: 'Brazil', tla: 'BRA' },
+      score: {
+        winner: 'HOME_TEAM',
+        duration: 'PENALTY_SHOOTOUT',
+        fullTime: { home: 5, away: 3 },
+        halfTime: { home: 0, away: 0 },
+        regularTime: { home: 1, away: 1 },
+        extraTime: { home: 0, away: 0 },
+        penalties: { home: 4, away: 2 },
+      },
+    });
+    const result = toResult(match, true);
+
+    expect(result.homeGoals).toBe(1);
+    expect(result.awayGoals).toBe(1);
+    expect(result.homePenGoals).toBe(2); // Brazil's pens in our home slot
+    expect(result.awayPenGoals).toBe(4); // Morocco's pens in our away slot
+    expect(result.penaltyWinner).toBe('Morocco');
+    expect(result.winner).toBe('Morocco');
+  });
+
+  it('does not invent score fields when swapping a partially-scored match', () => {
+    const match = makeFdMatch({
+      status: 'SCHEDULED',
+      score: {
+        winner: null,
+        duration: 'REGULAR',
+        fullTime: { home: null, away: null },
+        halfTime: { home: null, away: null },
+        regularTime: null,
+        extraTime: null,
+        penalties: null,
+      },
+    });
+    const result = toResult(match, true);
+
+    expect(result.homeGoals).toBeUndefined();
+    expect(result.awayGoals).toBeUndefined();
+    expect('homeGoals' in result).toBe(false);
+    expect('awayGoals' in result).toBe(false);
+  });
+
   it('does not set penalty fields when penalties object has null values', () => {
     const match = makeFdMatch({
       score: {

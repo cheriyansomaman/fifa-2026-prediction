@@ -183,12 +183,14 @@ describe('buildKO', () => {
     expect(stages['final']).toBe(1);
   });
 
-  it('uses TBC for teams when no group results available', () => {
+  it('hardcodes R32 pairings and uses TBC for later rounds without results', () => {
     const ko = buildKO({});
     const r32 = ko.filter((f) => f.stage === 'r32');
-    // Group winners/runners should be TBC if groups not completed
-    const tbcCount = r32.filter((f) => f.home === 'TBC' || f.away === 'TBC').length;
-    expect(tbcCount).toBeGreaterThan(0);
+    // R32 pairings are fixed (actual qualified teams), never TBC
+    expect(r32.some((f) => f.home === 'TBC' || f.away === 'TBC')).toBe(false);
+    // R16 onwards depend on feeder results, so all TBC with no results
+    const later = ko.filter((f) => f.stage !== 'r32');
+    expect(later.every((f) => f.home === 'TBC' && f.away === 'TBC')).toBe(true);
   });
 
   it('propagates winners through rounds when results exist', () => {
