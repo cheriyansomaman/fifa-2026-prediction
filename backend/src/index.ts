@@ -54,17 +54,21 @@ async function tick(): Promise<void> {
     const updates: Record<string, unknown> = {};
 
     for (const m of matches) {
-      const id = resolveFixtureId(m.homeTeam.name, m.awayTeam.name, fixtureIndex);
-      if (id === null) {
+      const resolved = resolveFixtureId(m.homeTeam.name, m.awayTeam.name, fixtureIndex);
+      if (resolved === null) {
         console.warn(`[${ts()}] UNMATCHED: ${m.homeTeam.name} vs ${m.awayTeam.name} (${m.utcDate})`);
         continue;
       }
+      const { id, swapped } = resolved;
       if (finalizedIds.has(id)) {
         console.log(`[${ts()}] SKIP fixture #${id} (${m.homeTeam.name} vs ${m.awayTeam.name}) — already finalized`);
         continue;
       }
+      if (swapped) {
+        console.log(`[${ts()}] SWAP fixture #${id}: API home/away (${m.homeTeam.name} vs ${m.awayTeam.name}) is reversed vs our fixture — flipping scores`);
+      }
 
-      const result = toResult(m);
+      const result = toResult(m, swapped);
       const serialized = JSON.stringify(result);
       const prev = lastKnownResults.get(id);
 

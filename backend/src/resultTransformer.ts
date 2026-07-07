@@ -2,7 +2,15 @@ import type { FdMatch } from './types';
 import type { AppResult } from './types';
 import { normalizeTeam } from './teamMapping';
 
-export function toResult(match: FdMatch): AppResult {
+/**
+ * Convert a football-data.org match to the app's Result shape.
+ *
+ * `swapped` means the API's home team is our fixture's away team (the fixture
+ * was resolved via a reversed-order match), so home/away score fields must be
+ * flipped to line up with our fixture. `winner`/`penaltyWinner` are team names
+ * and need no flipping.
+ */
+export function toResult(match: FdMatch, swapped = false): AppResult {
   const { score, homeTeam, awayTeam } = match;
   const home = normalizeTeam(homeTeam.name);
   const away = normalizeTeam(awayTeam.name);
@@ -40,5 +48,18 @@ export function toResult(match: FdMatch): AppResult {
 
   result.matchStatus = match.status;
 
-  return result;
+  return swapped ? swapHomeAway(result) : result;
+}
+
+function swapHomeAway(r: AppResult): AppResult {
+  const swapped: AppResult = { ...r };
+  delete swapped.homeGoals;
+  delete swapped.awayGoals;
+  delete swapped.homePenGoals;
+  delete swapped.awayPenGoals;
+  if (r.awayGoals !== undefined) swapped.homeGoals = r.awayGoals;
+  if (r.homeGoals !== undefined) swapped.awayGoals = r.homeGoals;
+  if (r.awayPenGoals !== undefined) swapped.homePenGoals = r.awayPenGoals;
+  if (r.homePenGoals !== undefined) swapped.awayPenGoals = r.homePenGoals;
+  return swapped;
 }
